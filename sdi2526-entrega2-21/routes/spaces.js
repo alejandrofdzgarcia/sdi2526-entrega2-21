@@ -1,6 +1,25 @@
 const { ObjectId } = require("mongodb");
 
 module.exports = function (app, spacesRepository) {
+    app.get('/spaces/:id', function (req, res) {
+        let spaceId = new ObjectId(req.params.id);
+        let filter = {_id: spaceId};
+
+        spacesRepository.findSpace(filter, {}).then((result) => {
+            let availability = result.active ? "Disponible" : "No disponible";
+            let spaceDetails = {
+                name: result.name,
+                type: result.type,
+                location: result.location,
+                capacity: result.capacity,
+                description: result.description,
+                availability: availability
+            }
+
+            res.render('spaces/details.twig', { space: spaceDetails });
+        });
+    });
+
     app.get('/spaces/list', function (req, res) {
         let filter = { active: true };
 
