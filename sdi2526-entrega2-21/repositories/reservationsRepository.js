@@ -28,5 +28,16 @@ module.exports = {
         } catch (error) {
             throw (error);
         }
+    },
+    updateReservation: async function (filter, update) {
+        try {
+            await this.dbClient.connect();
+            const database = this.dbClient.db(this.database);
+            const reservationsCollection = database.collection(this.collectionName);
+            const result = await reservationsCollection.updateOne(filter, { $set: update });
+            return result;
+        } catch (error) {
+            throw (error);
+        }
     }
 };

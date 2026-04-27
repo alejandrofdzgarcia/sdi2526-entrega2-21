@@ -69,7 +69,50 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             }
 
         } catch (error) {
-            console.error("Error en API de reservas:", error);
+            res.status(500).json({ error: "Error interno del servidor: " + error.message });
+        }
+    });
+
+    app.delete('/api/v1.0/reservations/:id', async (req, res) => {
+        try {
+            const reservationId = req.params.id;
+            const { userDni } = req.body;
+
+            if (!userDni) {
+                return res.status(400).json({ error: "Falta el DNI del usuario para verificar la propiedad" });
+            }
+
+            const reservations = await reservationsRepository.getReservations({ _id: new ObjectId(reservationId) });
+
+            if (reservations.length === 0) {
+                return res.status(404).json({ error: "Reserva no encontrada" });
+            }
+
+            const reservation = reservations[0];
+
+            if (reservation.userDni !== userDni) {
+                return res.status(403).json({ error: "Solo se pueden cancelar reservas propias" });
+            }
+
+            if (reservation.status === "CANCELADA") {
+                return res.status(400).json({ error: "La reserva ya se encuentra cancelada" });
+            }
+
+            const result = await reservationsRepository.updateReservation(
+                { _id: new ObjectId(reservationId) },
+                { status: "CANCELADA" }
+            );
+
+            if (result.modifiedCount > 0) {
+                res.status(200).json({
+                    message: "Reserva cancelada correctamente",
+                    status: "CANCELADA"
+                });
+            } else {
+                res.status(500).json({ error: "No se pudo actualizar el estado de la reserva" });
+            }
+
+        } catch (error) {
             res.status(500).json({ error: "Error interno del servidor: " + error.message });
         }
     });
