@@ -2,6 +2,32 @@
 {% block title %} Espacio Disponible {% endblock %}
 {% block main_container %}
     <h2>Espacios Disponibles</h2>
+
+    <!-- Formulario de Búsqueda -->
+    <div class="row">
+        <div class="col-sm-12">
+            <form class="form-inline" action="/spaces/list" method="get">
+                <div class="form-group">
+                    <label for="type">Tipo:</label>
+                    <select name="type" id="type" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="SALA" {% if activeFilters.type == 'SALA' %}selected{% endif %}>Sala</option>
+                        <option value="AULA" {% if activeFilters.type == 'AULA' %}selected{% endif %}>Aula</option>
+                        <option value="COWORK" {% if activeFilters.type == 'COWORK' %}selected{% endif %}>Cowork</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="capacity">Capacidad mínima:</label>
+                    <input type="number" name="capacity" id="capacity" class="form-control" 
+                           placeholder="Ej: 10" value="{{ activeFilters.capacity }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <a href="/spaces/list" class="btn btn-default">Limpiar</a>
+            </form>
+        </div>
+    </div>
+    <br>
+
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
@@ -22,6 +48,10 @@
                     <td>{{ space.location }}</td>
                     <td>{{ space.capacity }}</td>
                     <td>{{ space.description }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No se encontraron espacios que coincidan con la búsqueda.</td>
                 </tr>
             {% endfor %}
             </tbody>

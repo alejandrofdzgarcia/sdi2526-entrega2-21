@@ -1,33 +1,27 @@
-const express = require('express');
-const router = express.Router();
-const repositories = require('../modules/repositories');
+const { ObjectId } = require("mongodb");
 
-/* GET listado de espacios disponibles. */
-router.get('/list', async function (req, res, next) {
-    try {
-        const filter = { active: true };
+module.exports = function (app, spacesRepository) {
+    app.get('/spaces/list', function (req, res) {
+        let filter = { active: true };
 
-        // Filtering by type
-        if (req.query.tipo && req.query.tipo !== "") {
-            filter.type = req.query.tipo;
+        if (req.query.type && req.query.type !== "") {
+            filter.type = req.query.type;
         }
 
-        // Filtering by minimum capacity
-        if (req.query.capacidad && req.query.capacidad !== "") {
-            filter.capacity = { $gte: parseInt(req.query.capacidad) };
+        if (req.query.capacity && req.query.capacity !== "") {
+            filter.capacity = { $gte: parseInt(req.query.capacity) };
         }
 
-        const spaces = await repositories.getSpacesCollection().find(filter).toArray();
+        let options = { sort: { name: 1 } };
 
-        res.render('spaces/list', {
-            title: 'Espacios Disponibles',
-            spaces: spaces,
-            activeFilters: req.query
+        spacesRepository.getSpaces(filter, options).then(spaces => {
+            res.render('spaces/list.twig', {
+                title: 'Espacios Disponibles',
+                spaces: spaces,
+                activeFilters: req.query
+            });
+        }).catch(error => {
+            res.send("Se ha producido un error al listar los espacios: " + error);
         });
-    } catch (error) {
-        console.error("Error fetching spaces:", error);
-        res.status(500).send("Error al obtener el listado de espacios");
-    }
-});
-
-module.exports = router;
+    });
+};

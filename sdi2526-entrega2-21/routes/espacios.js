@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const repositories = require('../modules/repositories');
+const repositories = require('../repositories/repositories');
 
 /* GET listado de espacios disponibles. */
 router.get('/list', async function (req, res, next) {
@@ -8,13 +8,13 @@ router.get('/list', async function (req, res, next) {
         const filter = { active: true };
 
         // Filtering by type
-        if (req.query.tipo && req.query.tipo !== "") {
-            filter.type = req.query.tipo;
+        if (req.query.type && req.query.type !== "") {
+            filter.type = req.query.type;
         }
 
         // Filtering by minimum capacity
-        if (req.query.capacidad && req.query.capacidad !== "") {
-            filter.capacity = { $gte: parseInt(req.query.capacidad) };
+        if (req.query.capacity && req.query.capacity !== "") {
+            filter.capacity = { $gte: parseInt(req.query.capacity) };
         }
 
         const spaces = await repositories.getSpacesCollection().find(filter).toArray();

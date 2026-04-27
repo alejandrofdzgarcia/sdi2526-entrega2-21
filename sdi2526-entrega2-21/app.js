@@ -6,7 +6,6 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var spacesRouter = require('./routes/spaces');
 
 var app = express();
 
@@ -20,9 +19,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const { MongoClient } = require("mongodb");
+const url = "mongodb://localhost:27017";
+const dbClient = new MongoClient(url);
+const repositories = require('./repositories/repositories');
+repositories.init(app, dbClient);
+
+require('./routes/spaces')(app, repositories);
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/spaces', spacesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
