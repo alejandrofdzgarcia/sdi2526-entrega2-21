@@ -1,6 +1,40 @@
 {% extends "layout.twig" %}
 {% block title %} Lista de todas las reservas {% endblock %}
 {% block main_container %}
+    <!-- Búsqueda -->
+    <div class="row">
+        <div id="custom-search-input ">
+            <form method="get" action="/admin/reservations/list">
+                <div class="input-group col-xs-8 col-sm-6 col-md-4 col-lg-5 pull-right">
+                    <label for="searchSpace">Filtrar por espacio:</label>
+                    <select name="searchSpace" id="searchSpace" onchange="this.form.submit()">
+                        <option value="">-- Todos --</option>
+                        {% for space in selectSpacesOptions %}
+                            <option value="{{ space.id }}"
+                                    {% if searchSpace == space.id %}selected{% endif %}>
+                                {{ space.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="startDate">Desde:</label>
+                    <input type="date"
+                           id="startDate"
+                           name="startDate"
+                           value="{{ startDate ? '' }}"
+                           onchange="this.form.submit()">
+
+                    <label for="endDate">Hasta:</label>
+                    <input type="date"
+                           id="endDate"
+                           name="endDate"
+                           value="{{ endDate ? '' }}"
+                           onchange="this.form.submit()">
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Fin Búsqueda -->
 
     <h2>Todas las Reservas</h2>
 
@@ -18,8 +52,8 @@
             <tbody>
             {% for reservation in reservations %}
                 <tr>
-                    <td>{{reservation.userDni}}</td>
-                    <td>{{reservation.spaceId}}</td>
+                    <td>{{reservation.user}}</td>
+                    <td>{{reservation.space}}</td>
                     <td>{{reservation.startDate}}</td>
                     <td>{{reservation.endDate}}</td>
                     <td>{{reservation.status}}</td>
@@ -29,4 +63,19 @@
         </table>
     </div>
 
+    <!-- Paginacion -->
+    <div class="row text-center">
+        <ul class="pagination">
+            {% for page in pages %}
+                <li class="page-item" id="pi-{{ page }}">
+                    <a class="page-link"
+                       href="/admin/reservations/list?page={{ page }}&searchSpace={{ searchSpace }}&startDate={{ startDate }}&endDate={{ endDate }}">{{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+            <script>
+                $("#pi-" + "{{ currentPage }}").addClass("active");
+            </script>
+        </ul>
+    </div>
 {% endblock %}

@@ -13,7 +13,6 @@ module.exports = {
      * @param filter
      * @param options
      * @param page
-     * @returns {Promise<{reservations: *, total: *}>}
      */
     getReservationPg: async function (filter, options, page) {
         try {
@@ -21,7 +20,7 @@ module.exports = {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
             const reservationsCollection = database.collection(this.collectionName);
-            const reservationsCollectionCount = await reservationsCollection.count();
+            const reservationsCollectionCount = await reservationsCollection.find(filter, options).count();
             const cursor = reservationsCollection.find(filter, options).skip((page - 1) * limit).limit(limit);
             const reservations = await cursor.toArray();
             const result = {reservations: reservations, total: reservationsCollectionCount}
