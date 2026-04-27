@@ -7,6 +7,30 @@ module.exports = {
         this.dbClient = dbClient;
         this.app = app;
     },
+
+    /**
+     * Devuelve la lista de reservas paginadas
+     * @param filter
+     * @param options
+     * @param page
+     * @returns {Promise<{reservations: *, total: *}>}
+     */
+    getReservationPg: async function (filter, options, page) {
+        try {
+            const limit = 5;
+            await this.dbClient.connect();
+            const database = this.dbClient.db(this.database);
+            const reservationsCollection = database.collection(this.collectionName);
+            const reservationsCollectionCount = await reservationsCollection.count();
+            const cursor = reservationsCollection.find(filter, options).skip((page - 1) * limit).limit(limit);
+            const reservations = await cursor.toArray();
+            const result = {reservations: reservations, total: reservationsCollectionCount}
+            return result;
+        }catch (error) {
+            throw error;
+        }
+    },
+
     getReservations: async function (filter, options) {
         try {
             await this.dbClient.connect();
