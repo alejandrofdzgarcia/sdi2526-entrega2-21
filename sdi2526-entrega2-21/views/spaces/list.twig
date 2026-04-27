@@ -1,0 +1,29 @@
+{% extends "layout.twig" %}
+{% block title %} Espacio Disponible {% endblock %}
+{% block main_container %}
+    <h2>Espacios Disponibles</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Localización</th>
+                <th>Capacidad</th>
+                <th>Descripción</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for space in spaces %}
+                <tr>
+                    <td>{{ space.name }}</td>
+                    <td>{{ space.type }}</td>
+                    <td>{{ space.location }}</td>
+                    <td>{{ space.capacity }}</td>
+                    <td>{{ space.description }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

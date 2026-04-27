@@ -1,6 +1,34 @@
 {% extends 'layout.twig' %}
 
-{% block body %}
-  <h1>{{title}}</h1>
-  <p>Welcome to {{title}}</p>
+{% block main_container %}
+  <div class="hero">
+    <h1>Gestión de Reserva de Espacios</h1>
+    <p>Bienvenido al sistema de gestión de espacios de la organización. Desde aquí podrás consultar la disponibilidad y gestionar tus reservas de forma eficiente.</p>
+    <div class="hero-actions">
+      <a href="/spaces/list" class="btn btn-primary btn-lg">Consultar Espacios</a>
+    </div>
+  </div>
+
+  <style>
+    .hero {
+      text-align: center;
+      padding: 80px 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: 24px;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    .btn-lg {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+    }
+  </style>
 {% endblock %}
