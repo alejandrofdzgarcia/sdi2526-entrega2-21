@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/react-client/react-client.iml" filepath="$PROJECT_DIR$/react-client/react-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/sdi2526-entrega2-21.iml" filepath="$PROJECT_DIR$/.idea/sdi2526-entrega2-21.iml" />
     </modules>
   </component>
