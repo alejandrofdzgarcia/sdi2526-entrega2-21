@@ -1,0 +1,45 @@
+{% extends "layout.twig" %}
+{% block title %} Espacio Disponible {% endblock %}
+{% block main_container %}
+
+    <div class="container" id="main-container">
+
+        <h2>{{ space.name }}</h2>
+
+        <div class="card">
+            <div class="card-header">Tipo</div>
+            <div class="card-body">
+                <p class="card-text" >{{ space.type }}</p>
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-header">Ubicación</div>
+            <div class="card-body">
+                <p class="card-text" >{{ space.location }}</p>
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-header">Capacidad</div>
+            <div class="card-body">
+                <p class="card-text" >{{ space.capacity }}</p>
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-header">Descripción</div>
+            <div class="card-body">
+                <p class="card-text" >{{ space.description }}</p>
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-header">Disponible</div>
+            <div class="card-body">
+                <p class="card-text" >{{ space.availability }}</p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
