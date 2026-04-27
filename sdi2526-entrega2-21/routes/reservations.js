@@ -44,7 +44,6 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
             let result = await reservationsRepository.getReservationPg(filter, options, page);
 
             let lastPage = result.total / limit;
-            console.log("Ultima pagina" + lastPage + " Result.count " + result.total);
             //quitar decimales
             if (result.total % limit > 0) {
                 lastPage = lastPage + 1;
@@ -55,7 +54,6 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
                     pages.push(i);
                 }
             }
-            console.log(pages);
 
             const formattedReservations = await Promise.all(
                 result.reservations.map(async (r) => {
@@ -88,7 +86,6 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
                 })
             );
 
-            // 🎯 Render final
             res.render("reservations/globalList.twig", {
                 reservations: formattedReservations,
                 selectSpacesOptions: selectSpacesOptions,
