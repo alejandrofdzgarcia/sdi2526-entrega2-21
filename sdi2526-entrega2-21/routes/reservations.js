@@ -5,6 +5,7 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
 
     app.get("/admin/reservations/list", async function (req, res) {
         try {
+
             let filter = {};
             let options = {};
             const selectSpacesOptions = (await spacesRepository.getSpaces({}, {}))
