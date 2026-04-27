@@ -17,5 +17,16 @@ module.exports = {
         } catch (error) {
             throw (error);
         }
+    },
+    findSpace: async function (filter, options) {
+        try {
+            await this.dbClient.connect();
+            const database = this.dbClient.db(this.database);
+            const spacesCollection = database.collection(this.collectionName);
+            const space = await spacesCollection.findOne(filter, options);
+            return space;
+        } catch (error) {
+            throw (error);
+        }
     }
 };
