@@ -2,6 +2,26 @@ const { ObjectId } = require("mongodb");
 
 module.exports = function (app, spacesRepository, reservationsRepository, maintenanceRepository) {
 
+    app.get('/api/v1.0/reservations', async (req, res) => {
+        try {
+             let user = res.user || "";
+
+             if(user === ""){
+                 return res.status(500).json({ error: "Error: Usuario no autenticado"});
+             }
+
+             let filter = { userDni: user };
+
+             let reservations = await reservationsRepository.getReservations(filter, {});
+
+             res.status(200).json(reservations);
+
+        }catch (error) {
+            res.status(500).json({ error: "Error interno del servidor al " +
+                    "obtener las reservas propias: " + error.message });
+        }
+    });
+
     app.post('/api/v1.0/reservations', async (req, res) => {
         try {
             const { spaceId, startDate, endDate, reason, userDni } = req.body;
