@@ -33,7 +33,7 @@ maintenanceRepository.init(app, dbClient);
 
 require('./routes/spaces')(app, spacesRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);
-
+require("./routes/reservations.js")(app, reservationsRepository, spacesRepository);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
