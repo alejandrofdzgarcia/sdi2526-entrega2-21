@@ -41,7 +41,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
             </option>
           ))}
         </select>
-        {errors.spaceId && <span className="error-text">{errors.spaceId}</span>}
       </div>
 
       <div className="form-group">
@@ -54,7 +53,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
           onChange={handleChange}
           required
         />
-        {errors.startDate && <span className="error-text">{errors.startDate}</span>}
       </div>
 
       <div className="form-group">
@@ -67,7 +65,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
           onChange={handleChange}
           required
         />
-        {errors.endDate && <span className="error-text">{errors.endDate}</span>}
       </div>
 
       <div className="form-group">
@@ -81,7 +78,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
           onChange={handleChange}
           required
         />
-        {errors.userDni && <span className="error-text">{errors.userDni}</span>}
       </div>
 
       <div className="form-group">
