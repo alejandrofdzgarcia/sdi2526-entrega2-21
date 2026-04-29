@@ -2,9 +2,14 @@ const { ObjectId } = require("mongodb");
 
 module.exports = function (app, spacesRepository, reservationsRepository, maintenanceRepository) {
 
+    /**
+     * Devuelve las la info de las reservas del usuario logeado
+     */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
              let user = res.user || "";
+
+            user = "10000001S"
 
              if(user === ""){
                  return res.status(500).json({ error: "Error: Usuario no autenticado"});
@@ -14,7 +19,44 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
 
              let reservations = await reservationsRepository.getReservations(filter, {});
 
-             res.status(200).json(reservations);
+             //Se obtienen todos los espacios
+            const spaces = await spacesRepository.getSpaces({}, {});
+
+            //se mapean los nombres para acceder a ellos por su id
+            const spaceMap = {};
+            spaces.forEach(s => {
+                spaceMap[s._id.toString()] = s.name;
+            });
+
+            //se formatea la fecha de las reservas y se mapean
+            const resultReservations = reservations.map(r => {
+
+                const startDate = new Date(r.startDate).toLocaleString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+
+                const endDate = new Date(r.endDate).toLocaleString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+
+                return {
+                    user: r.userDni,
+                    space: spaceMap[r.spaceId.toString()] || "Error Espacio",
+                    startDate: startDate,
+                    endDate: endDate,
+                    status: r.status
+                };
+            });
+
+             res.status(200).json(resultReservations);
 
         }catch (error) {
             res.status(500).json({ error: "Error interno del servidor al " +
