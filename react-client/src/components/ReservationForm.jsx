@@ -10,44 +10,17 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
     reason: ''
   });
 
-  const [errors, setErrors] = useState({});
-
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.spaceId) newErrors.spaceId = 'Debe seleccionar un espacio';
-    if (!formData.startDate) newErrors.startDate = 'Debe seleccionar una fecha de inicio';
-    if (!formData.endDate) newErrors.endDate = 'Debe seleccionar una fecha de fin';
-    if (!formData.userDni) newErrors.userDni = 'El DNI es obligatorio';
-
-    if (formData.startDate && formData.endDate) {
-      if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-        newErrors.endDate = 'La fecha de fin debe ser posterior a la de inicio';
-      }
-      if (new Date(formData.startDate) < new Date()) {
-        newErrors.startDate = 'La fecha de inicio no puede ser en el pasado';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
-    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit(formData);
-    }
+    onSubmit(formData);
   };
 
   return (
