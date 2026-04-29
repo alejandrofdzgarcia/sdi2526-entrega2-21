@@ -53,7 +53,7 @@ const AddReservation = ({ onReservationAdded }) => {
                     message: data.message || "Reserva registrada correctamente",
                     type: 'success'
                 });
-                setFormKey(prev => prev + 1); // Reset form
+                setFormKey(prev => prev + 1);
                 if (onReservationAdded) {
                     onReservationAdded();
                 }

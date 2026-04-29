@@ -18,7 +18,7 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
     if (!formData.startDate) newErrors.startDate = 'Debe seleccionar una fecha de inicio';
     if (!formData.endDate) newErrors.endDate = 'Debe seleccionar una fecha de fin';
     if (!formData.userDni) newErrors.userDni = 'El DNI es obligatorio';
-    
+
     if (formData.startDate && formData.endDate) {
       if (new Date(formData.startDate) >= new Date(formData.endDate)) {
         newErrors.endDate = 'La fecha de fin debe ser posterior a la de inicio';
@@ -38,7 +38,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
@@ -123,8 +122,8 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
         />
       </div>
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={isLoading}
         className="submit-btn"
       >
