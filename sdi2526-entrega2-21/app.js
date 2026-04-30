@@ -6,11 +6,15 @@ var logger = require('morgan');
 var session = require('express-session');
 var crypto = require('crypto');
 
+var indexRouter = require('./routes/index');
+
 var app = express();
 
+// ─── View engine ────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'twig');
 
+// ─── Middleware básico ───────────────────────────────────────────────────────
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -34,6 +38,16 @@ app.use(function (req, res, next) {
     next();
 });
 
+// ─── Sesiones ────────────────────────────────────────────────────────────────
+app.use(session({
+    secret: 'sdi2526-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 60 * 60 * 1000 } // 1 hora
+}));
+
+
+// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -47,22 +61,21 @@ app.use(function (req, res, next) {
     }
 });
 
+// ─── MongoDB ─────────────────────────────────────────────────────────────────
 const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
 const dbClient = new MongoClient(url);
 
+// ─── Repositorios ─────────────────────────────────────────────────────────────
 const usersRepository        = require('./repositories/usersRepository');
 const spacesRepository       = require('./repositories/spacesRepository');
 const reservationsRepository = require('./repositories/reservationsRepository');
-const maintenanceRepository  = require('./repositories/maintenanceRepository');
+const maintenanceRepository = require('./repositories/maintenanceRepository');
 
 usersRepository.init(app, dbClient);
 spacesRepository.init(app, dbClient);
 reservationsRepository.init(app, dbClient);
 maintenanceRepository.init(app, dbClient);
-
-const dbInit = require('./repositories/dbInit');
-dbInit.init(app, dbClient);
 
 const adminSessionRouter = require('./routes/adminSessionRouter');
 const userTokenRouter    = require('./routes/userTokenRouter');
@@ -81,10 +94,12 @@ require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);
 require('./routes/api/spacesAPIv1.0')(app, spacesRepository);
 
+// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     next(createError(404));
 });
 
+// ─── Error handler ────────────────────────────────────────────────────────────
 app.use(function (err, req, res, next) {
     res.locals.message = err.message;
     res.locals.error = app.get('env') === 'development' ? err : {};

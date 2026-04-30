@@ -1,3 +1,7 @@
+const { ObjectId } = require("mongodb");
+const crypto = require("crypto");
+const clave = "abcdefg";
+
 module.exports = {
     dbClient: null,
     app: null,
@@ -20,6 +24,12 @@ module.exports = {
         }
     },
 
+    /**
+     * Devuelve la lista de usuarios paginada.
+     * @param {Object} filter
+     * @param {Object} options
+     * @param {number} page
+     */
     getUsersPg: async function (filter, options, page) {
         try {
             const limit = 5;
@@ -48,6 +58,10 @@ module.exports = {
         }
     },
 
+    /**
+     * Inserta un nuevo usuario en la base de datos.
+     * @param {Object} user
+     */
     insertUser: async function (user) {
         try {
             await this.dbClient.connect();
@@ -60,6 +74,10 @@ module.exports = {
     },
 
     updatePassword: async function (dni, newPassHash) {
+    /**
+     * Actualiza un usuario existente.
+     */
+    updateUser: async function (filter, update) {
         try {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
@@ -71,5 +89,13 @@ module.exports = {
         } catch (error) {
             throw (error);
         }
+    },
+
+    /**
+     * Hashea una contraseña con HMAC-SHA256.
+     * @param {string} password
+     */
+    hashPassword: function (password) {
+        return crypto.createHmac("sha256", clave).update(password).digest("hex");
     }
 };
