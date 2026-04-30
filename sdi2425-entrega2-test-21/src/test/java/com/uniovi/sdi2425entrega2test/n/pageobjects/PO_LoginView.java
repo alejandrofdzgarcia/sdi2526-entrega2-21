@@ -30,4 +30,10 @@ public class PO_LoginView extends PO_NavView {
 		String loginText = getP().getString(checkKeyText, PO_Properties.getSPANISH());
 		clickOption(driver, "logout", "text", loginText);
 	}
+
+	public static void loginAndCheck(WebDriver driver, String dni, String password, String checkText) {
+		PO_HomeView.clickOption(driver, "login", "class", "btn btn-primary");
+		PO_LoginView.fillLoginForm(driver, dni, password);
+		PO_View.checkElementBy(driver, "text", checkText);
+	}
 }

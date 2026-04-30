@@ -1,12 +1,21 @@
 package com.uniovi.sdi2425entrega2test.n;
 
+import com.uniovi.sdi2425entrega2test.n.pageobjects.PO_LoginView;
+import com.uniovi.sdi2425entrega2test.n.pageobjects.PO_PrivateView;
+import com.uniovi.sdi2425entrega2test.n.pageobjects.PO_View;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.json.simple.JSONObject;
 import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class Sdi2425Entrega2TestApplicationTests {
@@ -110,7 +119,7 @@ class Sdi2425Entrega2TestApplicationTests {
     public void PR11() {
         final String RestAssuredURL = "http://localhost:8081/api/v1.0/songs";
         Response response = RestAssured.get(RestAssuredURL);
-        Assertions.assertEquals(403, response.getStatusCode());
+        assertEquals(403, response.getStatusCode());
     }
 
     @Test
@@ -182,7 +191,23 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(23)
     public void PR23() {
-        Assertions.assertTrue(false, "PR23 sin hacer");
+        PO_LoginView.loginAndCheck(driver, "12345678Z", "@Dm1n1str@D0r", "Gestión de Espacios");
+        driver.navigate().to(URL + "/admin/reservations/list");
+
+        PO_View.checkElementBy(driver, "text", "Usuario");
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+        PO_View.checkElementBy(driver, "text", "Estado");
+
+        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        //probar paginación
+        PO_PrivateView.checkPagination(driver);
+        filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //Assertions.assertTrue(false, "PR23 sin hacer");
     }
 
     @Test
@@ -283,7 +308,7 @@ class Sdi2425Entrega2TestApplicationTests {
         //3. Hacemos la petición
         Response response = request.post(RestAssuredURL);
         //4. Comprobamos que el servicio ha tenido exito
-        Assertions.assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
@@ -313,8 +338,19 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(43)
     public void PR43() {
+        final String RestAssuredURL = "http://localhost:8081/api/v1.0/reservations";
+        RequestSpecification request = RestAssured.given();
+        request.header("Content-Type", "application/json");
 
-        Assertions.assertTrue(false, "PR43 sin hacer");
+        Response response = request.get(RestAssuredURL);
+
+        //se comprueba codigo OK
+        assertEquals(200, response.getStatusCode());
+
+        //se comprueba tamaño de la respuesta
+        assertEquals(5, response.jsonPath().getList("$").size());
+
+        //Assertions.assertTrue(false, "PR43 sin hacer");
     }
 
     @Test
