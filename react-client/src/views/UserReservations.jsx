@@ -44,7 +44,6 @@ const UserReservations = () => {
         <div className="my-reservations-container">
             <h2>Mis Reservas</h2>
 
-            {/* 🔽 Filtro */}
             <div className="filter-container" style={{ maxWidth: "250px" }}>
                 <label className="form-label">Filtrar por estado:</label>
                 <select
@@ -58,15 +57,14 @@ const UserReservations = () => {
                 </select>
             </div>
 
-            {/* ⏳ Loading */}
+
             {isLoading && <p>Cargando reservas...</p>}
 
-            {/* 📭 Sin datos */}
+
             {!isLoading && filteredReservations.length === 0 && (
                 <p>No hay reservas para mostrar.</p>
             )}
 
-            {/* 📋 Tabla */}
             {!isLoading && filteredReservations.length > 0 && (
                 <div className="reservations-table-container">
                     <table className="reservations-table">

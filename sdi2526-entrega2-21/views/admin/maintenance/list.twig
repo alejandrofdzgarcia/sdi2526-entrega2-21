@@ -1,0 +1,62 @@
+{% extends "layout.twig" %}
+{% block title %}Bloqueos de Mantenimiento{% endblock %}
+{% block main_container %}
+
+<div class="container" id="main-container">
+    <h2>Bloqueos de Mantenimiento</h2>
+    <a href="/admin/spaces/list" class="btn btn-default">
+        <span class="glyphicon glyphicon-arrow-left"></span> Volver a Espacios
+    </a>
+    <br><br>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead>
+            <tr>
+                <th>Espacio</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for block in blocks %}
+                <tr class="{% if block.status == 'CANCELADO' %}text-muted{% endif %}">
+                    <td>{{ block.spaceName }}</td>
+                    <td>{{ block.startFormatted }}</td>
+                    <td>{{ block.endFormatted }}</td>
+                    <td>{{ block.reason }}</td>
+                    <td>
+                        {% if block.status == 'ACTIVE' %}
+                            <span class="label label-warning">ACTIVO</span>
+                        {% else %}
+                            <span class="label label-default">CANCELADO</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if block.status == 'ACTIVE' %}
+                            <form method="post" action="/admin/maintenance/{{ block._id }}/cancel"
+                                  style="display:inline-block">
+                                <button type="submit" class="btn btn-xs btn-danger"
+                                        onclick="return confirm('¿Cancelar este bloqueo?')">
+                                    Cancelar
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay bloqueos registrados.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
