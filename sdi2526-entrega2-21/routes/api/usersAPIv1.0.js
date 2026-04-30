@@ -169,10 +169,10 @@ module.exports = function (app, usersRepository) {
 
             const user = {
                 dni: dniUpper,
-                nombre,
-                apellidos,
+                name: nombre,
+                lastname: apellidos,
                 password: hashPassword(app, password),
-                role: 'standard'
+                role: 'Empleado Estándar'
             };
 
             await usersRepository.insertUser(user);

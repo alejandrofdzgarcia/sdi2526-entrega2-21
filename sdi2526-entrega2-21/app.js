@@ -25,11 +25,11 @@ app.use(session({
     secret: 'sdi2526-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
 app.set('crypto', crypto);
-app.set('clave', 'sdi2526-hmac-key');
+app.set('clave', 'abcdefg');
 
 app.use(function (req, res, next) {
     res.locals.sessionUser   = req.session.user   || null;
@@ -38,16 +38,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-// ─── Sesiones ────────────────────────────────────────────────────────────────
-app.use(session({
-    secret: 'sdi2526-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 60 * 60 * 1000 } // 1 hora
-}));
-
-
-// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -61,16 +51,14 @@ app.use(function (req, res, next) {
     }
 });
 
-// ─── MongoDB ─────────────────────────────────────────────────────────────────
 const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
 const dbClient = new MongoClient(url);
 
-// ─── Repositorios ─────────────────────────────────────────────────────────────
 const usersRepository        = require('./repositories/usersRepository');
 const spacesRepository       = require('./repositories/spacesRepository');
 const reservationsRepository = require('./repositories/reservationsRepository');
-const maintenanceRepository = require('./repositories/maintenanceRepository');
+const maintenanceRepository  = require('./repositories/maintenanceRepository');
 
 usersRepository.init(app, dbClient);
 spacesRepository.init(app, dbClient);
@@ -80,26 +68,21 @@ maintenanceRepository.init(app, dbClient);
 const adminSessionRouter = require('./routes/adminSessionRouter');
 const userTokenRouter    = require('./routes/userTokenRouter');
 
-// Protege todas las rutas /admin/* — solo administradores autenticados
 app.use('/admin', adminSessionRouter);
-
-// Protege los endpoints de reservas de la API — requieren token JWT válido
 app.use('/api/v1.0/reservations', userTokenRouter);
 
 require('./routes/users')(app, usersRepository);
-require('./routes/spaces')(app, spacesRepository);
+require('./routes/spaces')(app, spacesRepository, maintenanceRepository, reservationsRepository, usersRepository);
 require('./routes/reservations')(app, reservationsRepository, spacesRepository);
 
 require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);
 require('./routes/api/spacesAPIv1.0')(app, spacesRepository);
 
-// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     next(createError(404));
 });
 
-// ─── Error handler ────────────────────────────────────────────────────────────
 app.use(function (err, req, res, next) {
     res.locals.message = err.message;
     res.locals.error = app.get('env') === 'development' ? err : {};

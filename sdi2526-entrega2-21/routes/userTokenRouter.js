@@ -32,7 +32,7 @@ userTokenRouter.use(function (req, res, next) {
 
         res.user = infoToken.user;
         req.session.user = infoToken.user;
-        req.session.role = infoToken.role || 'standard';
+        req.session.role = infoToken.role || 'Empleado Estándar';
         next();
     });
 });

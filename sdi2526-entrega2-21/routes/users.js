@@ -58,17 +58,17 @@ module.exports = function (app, usersRepository) {
 
     const user = {
       dni: dniUpper,
-      nombre,
-      apellidos,
+      name: nombre,
+      lastname: apellidos,
       password: hashPassword(app, password),
-      role: 'standard'
+      role: 'Empleado Estándar'
     };
 
     try {
       await usersRepository.insertUser(user);
       req.session.user   = user.dni;
-      req.session.nombre = user.nombre;
-      req.session.role   = 'standard';
+      req.session.nombre = user.name;
+      req.session.role   = 'Empleado Estándar';
       res.redirect('/spaces/list?message=Usuario registrado correctamente&messageType=alert-success');
     } catch (err) {
       if (err.code === 11000)
@@ -79,7 +79,7 @@ module.exports = function (app, usersRepository) {
 
   app.get('/users/login', function (req, res) {
     if (req.session.user) {
-      if (req.session.role === 'admin') return res.redirect('/admin/reservations/list');
+      if (req.session.role === 'Administrador') return res.redirect('/admin/reservations/list');
       return res.redirect('/spaces/list');
     }
     res.render('login.twig');
@@ -104,10 +104,10 @@ module.exports = function (app, usersRepository) {
       }
 
       req.session.user   = user.dni;
-      req.session.nombre = user.nombre;
-      req.session.role   = user.role || 'standard';
+      req.session.nombre = user.name;
+      req.session.role   = user.role || 'Empleado Estándar';
 
-      return user.role === 'admin'
+      return user.role === 'Administrador'
         ? res.redirect('/admin/reservations/list')
         : res.redirect('/spaces/list');
     } catch (error) {

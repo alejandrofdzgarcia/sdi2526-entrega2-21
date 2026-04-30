@@ -25,13 +25,10 @@
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
             <ul class="nav navbar-nav">
-
-                {% if user %}
-                    {# Menú usuario autenticado #}
+                {% if sessionUser %}
                     <li><a href="/spaces/list">Espacios</a></li>
 
-                    {% if user.role == 'Administrador' %}
-                        {# Menú exclusivo Administrador #}
+                    {% if sessionRole == 'Administrador' %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 Administración <span class="caret"></span>
@@ -43,43 +40,27 @@
                                 <li><a href="/admin/users/list">Listado de Usuarios</a></li>
                             </ul>
                         </li>
-                        {% if sessionUser %}
-                            <li><span class="navbar-text"><span class="glyphicon glyphicon-user"></span> {{ sessionNombre }}</span></li>
-                            <li><a href="/users/change-password"><span class="glyphicon glyphicon-lock"></span> Cambiar contraseña</a></li>
-                            <li><a href="/users/logout"><span class="glyphicon glyphicon-log-out"></span> Cerrar sesión</a></li>
-                        {% else %}
-                            <li><a href="/users/signup"><span class="glyphicon glyphicon-user"></span> Registrate</a></li>
-                            <li><a href="/users/login"><span class="glyphicon glyphicon-log-in"></span> Identifícate</a></li>
-                        {% endif %}
                     {% endif %}
                 {% endif %}
-
             </ul>
 
-      <ul class="nav navbar-nav navbar-right">
-        {% if user %}
-          <li class="navbar-text">
-            Hola, <strong>{{ user.name }}</strong>
-            {% if user.role == 'Administrador' %}
-              <span class="label label-danger" style="margin-left:4px">Admin</span>
-            {% endif %}
-          </li>
-          <li>
-            {# W3: Botón cerrar sesión visible SOLO para autenticados #}
-            <form method="post" action="/logout" style="display:inline; margin:0; padding:0">
-              <button type="submit" class="btn btn-link navbar-btn" id="btn-logout"
-                      style="color:#9d9d9d; padding: 15px">
-                <span class="glyphicon glyphicon-log-out"></span> Cerrar Sesión
-              </button>
-            </form>
-          </li>
-        {% else %}
-          <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Registrarte</a></li>
-          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Identificarte</a></li>
-        {% endif %}
-      </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if sessionUser %}
+                    <li class="navbar-text">
+                        Hola, <strong>{{ sessionNombre }}</strong>
+                        {% if sessionRole == 'Administrador' %}
+                            <span class="label label-danger" style="margin-left:4px">Admin</span>
+                        {% endif %}
+                    </li>
+                    <li><a href="/users/change-password"><span class="glyphicon glyphicon-lock"></span> Cambiar contraseña</a></li>
+                    <li><a href="/users/logout"><span class="glyphicon glyphicon-log-out"></span> Cerrar sesión</a></li>
+                {% else %}
+                    <li><a href="/users/signup"><span class="glyphicon glyphicon-user"></span> Registrarte</a></li>
+                    <li><a href="/users/login"><span class="glyphicon glyphicon-log-in"></span> Identificarte</a></li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
 
     <div class="container">
