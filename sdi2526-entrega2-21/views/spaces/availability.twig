@@ -1,0 +1,59 @@
+{% extends "layout.twig" %}
+{% block title %}Disponibilidad – {{ space.name }}{% endblock %}
+{% block main_container %}
+
+<div class="container" id="main-container">
+    <h2>Disponibilidad: {{ space.name }}</h2>
+    <p class="text-muted">{{ space.type }} · {{ space.location }} · Capacidad: {{ space.capacity }}</p>
+
+    <!-- Formulario de rango de fechas -->
+    <form class="form-inline" method="get" action="/spaces/{{ space._id }}/availability">
+        <div class="form-group">
+            <label for="startDate">Desde:</label>
+            <input type="datetime-local" id="startDate" name="startDate"
+                   class="form-control" value="{{ startDate }}">
+        </div>
+        <div class="form-group">
+            <label for="endDate">Hasta:</label>
+            <input type="datetime-local" id="endDate" name="endDate"
+                   class="form-control" value="{{ endDate }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Consultar</button>
+    </form>
+
+    <br>
+
+    {% if events is empty %}
+        <div class="alert alert-success">
+            <strong>¡Espacio libre!</strong> No hay reservas ni bloqueos en el rango seleccionado.
+        </div>
+    {% else %}
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Detalle</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for event in events %}
+                <tr class="{% if event.type == 'MANTENIMIENTO' %}warning{% else %}info{% endif %}">
+                    <td>
+                        <span class="label {{ event.badgeClass }}">{{ event.type }}</span>
+                    </td>
+                    <td>{{ event.start }}</td>
+                    <td>{{ event.end }}</td>
+                    <td>{{ event.detail }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <a href="/spaces/{{ space._id }}" class="btn btn-default">← Volver al detalle</a>
+    <a href="/spaces/list" class="btn btn-default">← Volver al listado</a>
+</div>
+
+{% endblock %}
