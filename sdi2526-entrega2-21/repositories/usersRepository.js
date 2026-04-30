@@ -74,10 +74,6 @@ module.exports = {
     },
 
     updatePassword: async function (dni, newPassHash) {
-    /**
-     * Actualiza un usuario existente.
-     */
-    updateUser: async function (filter, update) {
         try {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
@@ -88,6 +84,20 @@ module.exports = {
             );
         } catch (error) {
             throw (error);
+        }
+    },
+    /**
+     * Actualiza un usuario existente.
+     */
+    updateUser: async function (filter, update) {
+        try {
+            await this.dbClient.connect();
+            const database = this.dbClient.db(this.database);
+            const usersCollection = database.collection(this.collectionName);
+            const result = await usersCollection.updateOne(filter, { $set: update });
+            return result;
+        } catch (error) {
+            throw error;
         }
     },
 
