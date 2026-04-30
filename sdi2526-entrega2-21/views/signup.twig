@@ -1,0 +1,49 @@
+{% extends "layout.twig" %}
+{% block title %} Registro {% endblock %}
+{% block main_container %}
+    <h2>Registro de usuario</h2>
+    <form class="form-horizontal" method="post" action="/users/signup">
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="dni">DNI:</label>
+            <div class="col-sm-10">
+                <input id="dni" type="text" class="form-control" name="dni"
+                       placeholder="12345678Z" required="true"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="nombre">Nombre:</label>
+            <div class="col-sm-10">
+                <input id="nombre" type="text" class="form-control" name="nombre"
+                       placeholder="Nombre" required="true"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="apellidos">Apellidos:</label>
+            <div class="col-sm-10">
+                <input id="apellidos" type="text" class="form-control" name="apellidos"
+                       placeholder="Apellidos" required="true"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="password">Contraseña:</label>
+            <div class="col-sm-10">
+                <input id="password" type="password" class="form-control" name="password"
+                       placeholder="Contraseña" required="true"/>
+                <span class="help-block">Entre 12 y 20 caracteres, al menos 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial y sin espacios.</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="confirmPassword">Confirmar contraseña:</label>
+            <div class="col-sm-10">
+                <input id="confirmPassword" type="password" class="form-control" name="confirmPassword"
+                       placeholder="Confirmar contraseña" required="true"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary">Registrarse</button>
+                <a href="/users/login" class="btn btn-default">Ya tengo cuenta</a>
+            </div>
+        </div>
+    </form>
+{% endblock %}
