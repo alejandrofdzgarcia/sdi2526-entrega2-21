@@ -36,4 +36,9 @@ public class PO_PrivateView extends PO_NavView {
             System.out.println("Aviso: No hay suficientes datos para probar la paginación física (menos de 5 reservas).");
         }
     }
+
+    static public void findAndClick(WebDriver driver, String type, String XPath, int position) {
+        List<WebElement> elements = PO_View.checkElementBy(driver, type, XPath);
+        elements.get(position).click();
+    }
 }
