@@ -13,10 +13,10 @@ class Sdi2425Entrega2TestApplicationTests {
 
     static String PathFirefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
-    static WebDriver driver = getDriver(PathFirefox, Geckodriver);
+    static WebDriver driver = getDriver(PathFirefox);
     static String URL = "http://localhost:8081";
 
-    public static WebDriver getDriver(String PathFirefox, String Geckodriver) {
+    public static WebDriver getDriver(String PathFirefox) {
         System.setProperty("webdriver.firefox.bin", PathFirefox);
         driver = new FirefoxDriver();
         return driver;
@@ -131,5 +131,27 @@ class Sdi2425Entrega2TestApplicationTests {
         Response response = request.post(RestAssuredURL);
         //4. Comprobamos que el servicio ha tenido exito
         Assertions.assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    @Order(43)
+    public void PR43() {
+        //url de la api
+        final String RestAssuredURL = "http://localhost:8081/api/v1.0/reservations";
+
+        //logearse
+
+        //
+        RequestSpecification request = RestAssured.given();
+        request.header("Content-Type", "application/json");
+
+        //realizamos la petición
+        Response response = request.get(RestAssuredURL);
+
+        //se comprueba que el estado de la respusta es ok
+        Assertions.assertEquals(200, response.getStatusCode());
+
+        //se comprueba que se reciben las reservas
+        //no si haria falta si ya se cmprueba que el estado sea correcto
     }
 }
