@@ -10,19 +10,14 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class Sdi2425Entrega2TestApplicationTests {
-    //static String PathFirefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
-    //static String Geckodriver = "C:\\Path\\geckodriver-v0.30.0-win64.exe";
-    //static String Geckodriver = "C:\\Dev\\tools\\selenium\\geckodriver-v0.30.0-win64.exe";
-    static String Geckodriver = "/Users/delacal/Documents/SDI/geckodriver-v0.30.0-macos";
-    static String PathFirefox = "/Applications/Firefox.app/Contents/MacOS/firefox-bin";
-//static String Geckodriver = "/Users/USUARIO/selenium/geckodriver-v0.30.0-macos";
-//Común a Windows y a MACOSX
-    static WebDriver driver = getDriver(PathFirefox, Geckodriver);
+
+    static String PathFirefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+
+    static WebDriver driver = getDriver(PathFirefox);
     static String URL = "http://localhost:8081";
 
-    public static WebDriver getDriver(String PathFirefox, String Geckodriver) {
+    public static WebDriver getDriver(String PathFirefox) {
         System.setProperty("webdriver.firefox.bin", PathFirefox);
-        System.setProperty("webdriver.gecko.driver", Geckodriver);
         driver = new FirefoxDriver();
         return driver;
     }
@@ -138,4 +133,25 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertEquals(200, response.getStatusCode());
     }
 
+    @Test
+    @Order(43)
+    public void PR43() {
+        //url de la api
+        final String RestAssuredURL = "http://localhost:8081/api/v1.0/reservations";
+
+        //logearse
+
+        //
+        RequestSpecification request = RestAssured.given();
+        request.header("Content-Type", "application/json");
+
+        //realizamos la petición
+        Response response = request.get(RestAssuredURL);
+
+        //se comprueba que el estado de la respusta es ok
+        Assertions.assertEquals(200, response.getStatusCode());
+
+        //se comprueba que se reciben las reservas
+        //no si haria falta si ya se cmprueba que el estado sea correcto
+    }
 }
