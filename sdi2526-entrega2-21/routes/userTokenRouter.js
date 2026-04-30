@@ -4,8 +4,6 @@ const userTokenRouter = express.Router();
 const JWT_SECRET = 'secreto';
 
 userTokenRouter.use(function (req, res, next) {
-    console.log('[userTokenRouter] verificando token para:', req.originalUrl);
-
     const token = req.headers['token'] || req.body.token || req.query.token;
 
     if (!token) {
