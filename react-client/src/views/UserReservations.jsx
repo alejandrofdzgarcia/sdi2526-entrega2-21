@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../assets/UserReservations.css";
 
-
 const UserReservations = ({ onEdit }) => {
 
     const [reservations, setReservations] = useState([]);
@@ -12,13 +11,14 @@ const UserReservations = ({ onEdit }) => {
         fetchReservations();
     }, []);
 
-    //obtener las reservas
+    // obtener las reservas
     const fetchReservations = async () => {
         setIsLoading(true);
+
         try {
             const response = await fetch("http://localhost:8081/api/v1.0/reservations", {
                 headers: {
-                    "token": localStorage.getItem("token")
+                    token: localStorage.getItem("token")
                 }
             });
 
@@ -28,10 +28,45 @@ const UserReservations = ({ onEdit }) => {
             } else {
                 console.error("Error al obtener reservas");
             }
+
         } catch (error) {
             console.error("Error de conexión:", error);
+
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
+    };
+
+    // cancelar reserva
+    const cancelReservation = async (reservationId) => {
+
+        const confirmed = window.confirm(
+            "¿Seguro que quieres cancelar esta reserva?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(
+                `http://localhost:8081/api/v1.0/reservations/${reservationId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        token: localStorage.getItem("token")
+                    }
+                }
+            );
+
+            if (response.ok) {
+                // volver a cargar datos desde API
+                await fetchReservations();
+            } else {
+                console.error("Error al cancelar la reserva");
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+        }
     };
 
     // filtrar por estado
@@ -57,9 +92,7 @@ const UserReservations = ({ onEdit }) => {
                 </select>
             </div>
 
-
             {isLoading && <p>Cargando reservas...</p>}
-
 
             {!isLoading && filteredReservations.length === 0 && (
                 <p>No hay reservas para mostrar.</p>
@@ -77,31 +110,47 @@ const UserReservations = ({ onEdit }) => {
                             <th>Acciones</th>
                         </tr>
                         </thead>
+
                         <tbody>
-                        {filteredReservations.map((r, index) => (
-                            <tr key={index}>
+                        {filteredReservations.map((r) => (
+                            <tr key={r._id}>
                                 <td>{r.space}</td>
                                 <td>{r.startDate}</td>
                                 <td>{r.endDate}</td>
+
                                 <td>
-                                        <span className={
-                                            r.status === "ACTIVE"
-                                                ? "badge badge-active"
-                                                : "badge badge-cancelled"
-                                        }>
+                                        <span
+                                            className={
+                                                r.status === "ACTIVE"
+                                                    ? "badge badge-active"
+                                                    : "badge badge-cancelled"
+                                            }
+                                        >
                                             {r.status}
                                         </span>
                                 </td>
+
                                 <td>
                                     {r.status === "ACTIVE" && (
-                                        <button onClick={() => onEdit(r)}>
-                                            Editar
-                                        </button>
+                                        <>
+                                            <button onClick={() => onEdit(r)}>
+                                                Editar
+                                            </button>
+
+                                            <button
+                                                onClick={() =>
+                                                    cancelReservation(r._id)
+                                                }
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </>
                                     )}
                                 </td>
                             </tr>
                         ))}
                         </tbody>
+
                     </table>
                 </div>
             )}
