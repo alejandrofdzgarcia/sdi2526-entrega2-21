@@ -1,4 +1,4 @@
-package com.uniovi.sdi2425entrega2test.n.pageobjects;
+package com.uniovi.sdi2526entrega2test.n.pageobjects;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
