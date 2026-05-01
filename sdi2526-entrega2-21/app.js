@@ -88,7 +88,7 @@ app.use('/', indexRouter);
 
 require('./routes/users')(app, usersRepository);
 require('./routes/spaces')(app, spacesRepository, maintenanceRepository, reservationsRepository, usersRepository);
-require('./routes/reservations')(app, reservationsRepository, spacesRepository);
+require('./routes/reservations')(app, reservationsRepository, spacesRepository, usersRepository);
 
 require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);

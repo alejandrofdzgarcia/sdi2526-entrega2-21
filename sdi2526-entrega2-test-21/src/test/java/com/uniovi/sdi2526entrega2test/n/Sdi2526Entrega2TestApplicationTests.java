@@ -641,10 +641,81 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El administrador debe aparecer en el listado de usuarios");
     }
 
+    /**
+     * [PR35] El usuario administrador dispondrá de una acción para exportar a CSV el listado global de
+     * reservas (o el resultado de un filtro). El CSV deberá incluir, al menos: espacio, usuario, inicio, fin
+     * y estado.
+     */
     @Test
     @Order(35)
-    public void PR35() {
-        Assertions.assertTrue(false, "PR35 sin hacer");
+    void PR35() throws Exception {
+        java.nio.file.Path downloadDir = java.nio.file.Files.createTempDirectory("csv_test_");
+
+        org.openqa.selenium.firefox.FirefoxOptions options = new org.openqa.selenium.firefox.FirefoxOptions();
+        options.addPreference("browser.download.folderList", 2);
+        options.addPreference("browser.download.dir", downloadDir.toAbsolutePath().toString());
+        options.addPreference("browser.helperApps.neverAsk.saveToDisk", "text/csv");
+
+        WebDriverManager.firefoxdriver().setup();
+        System.setProperty("webdriver.firefox.bin", PathFirefox);
+        WebDriver csvDriver = new FirefoxDriver(options);
+
+        try {
+            csvDriver.navigate().to(URL + "/users/login");
+            PO_LoginView.fillLoginForm(csvDriver, "12345678Z", "@Dm1n1str@D0r");
+
+            csvDriver.navigate().to(URL + "/admin/reservations/list");
+
+            String spaceId = getSpaceIdByName("Sala Turing");
+            new org.openqa.selenium.support.ui.Select(csvDriver.findElement(By.id("searchSpace"))).selectByValue(spaceId);
+
+            SeleniumUtils.waitLoadElementsBy(csvDriver, "free", "//tbody/tr", PO_View.getTimeout());
+
+            int rowsInWeb = csvDriver.findElements(By.xpath("//tbody/tr")).size();
+            assertTrue(rowsInWeb > 0, "Debe haber reservas en la web para exportar");
+
+            csvDriver.findElement(By.id("btn-export")).click();
+
+            java.io.File csvFile = null;
+            long limit = System.currentTimeMillis() + 10000;
+            while (System.currentTimeMillis() < limit) {
+                java.io.File[] files = downloadDir.toFile().listFiles(
+                        f -> f.getName().endsWith(".csv") && !f.getName().endsWith(".part"));
+                if (files != null && files.length > 0) {
+                    csvFile = files[0];
+                    break;
+                }
+                Thread.sleep(500);
+            }
+            assertNotNull(csvFile, "El CSV debería haberse descargado");
+
+            String content = new String(java.nio.file.Files.readAllBytes(csvFile.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8).replace("\uFEFF", "");
+            String[] lines = content.split("\\r?\\n");
+
+            assertTrue(lines[0].contains("Espacio"), "Falta campo Espacio");
+            assertTrue(lines[0].contains("Nombre"),  "Falta campo Nombre");
+            assertTrue(lines[0].contains("DNI"),     "Falta campo DNI");
+            assertTrue(lines[0].contains("Inicio"),  "Falta campo Inicio");
+            assertTrue(lines[0].contains("Fin"),     "Falta campo Fin");
+            assertTrue(lines[0].contains("Estado"),  "Falta campo Estado");
+
+            assertEquals(16, lines.length, "El CSV debe tener 15 reservas + 1 cabecera");
+
+            for (int i = 1; i < lines.length; i++) {
+                assertTrue(lines[i].contains("Sala Turing"), "Fila " + i + " no pertenece al espacio filtrado");
+            }
+
+        } finally {
+            csvDriver.quit();
+
+            if (downloadDir.toFile().exists()) {
+                java.nio.file.Files.walk(downloadDir)
+                        .sorted(java.util.Comparator.reverseOrder())
+                        .map(java.nio.file.Path::toFile)
+                        .forEach(java.io.File::delete);
+            }
+        }
     }
 
     @Test
