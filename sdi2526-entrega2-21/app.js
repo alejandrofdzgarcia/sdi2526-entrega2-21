@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+var crypto = require('crypto');
 
 var indexRouter = require('./routes/index');
 
@@ -20,72 +21,71 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── Sesiones ────────────────────────────────────────────────────────────────
 app.use(session({
     secret: 'sdi2526-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 60 * 60 * 1000 } // 1 hora
+    cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
-// TEMPORAL: simular sesión para desarrollo
+app.set('crypto', crypto);
+app.set('clave', 'abcdefg');
+
 app.use(function (req, res, next) {
-    if (!req.session.user) {
-        req.session.user = {
-            dni: "12345678Z",
-            name: "Admin",
-            role: "Administrador"
-        };
-    }
+    res.locals.sessionUser   = req.session.user   || null;
+    res.locals.sessionNombre = req.session.nombre || null;
+    res.locals.sessionRole   = req.session.role   || null;
     next();
 });
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "POST, GET, DELETE, UPDATE, PUT");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, token");
 
-    if ('OPTIONS' === req.method) {
+    if (req.method === 'OPTIONS') {
         res.sendStatus(200);
     } else {
         next();
     }
 });
 
-// ─── MongoDB ─────────────────────────────────────────────────────────────────
 const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
 const dbClient = new MongoClient(url);
 
-// ─── Repositorios ─────────────────────────────────────────────────────────────
-const spacesRepository = require('./repositories/spacesRepository');
+const usersRepository        = require('./repositories/usersRepository');
+const spacesRepository       = require('./repositories/spacesRepository');
 const reservationsRepository = require('./repositories/reservationsRepository');
-const maintenanceRepository = require('./repositories/maintenanceRepository');
-const usersRepository = require('./repositories/usersRepository');
+const maintenanceRepository  = require('./repositories/maintenanceRepository');
 
+usersRepository.init(app, dbClient);
 spacesRepository.init(app, dbClient);
 reservationsRepository.init(app, dbClient);
 maintenanceRepository.init(app, dbClient);
-usersRepository.init(app, dbClient);
 
-// ─── Rutas ────────────────────────────────────────────────────────────────────
+const adminSessionRouter = require('./routes/adminSessionRouter');
+const userTokenRouter    = require('./routes/userTokenRouter');
+
+app.use('/admin', adminSessionRouter);
+app.use('/api/v1.0/reservations', userTokenRouter);
+
+require('./routes/users')(app, usersRepository);
 require('./routes/spaces')(app, spacesRepository, maintenanceRepository, reservationsRepository, usersRepository);
+require('./routes/reservations')(app, reservationsRepository, spacesRepository);
+
+require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);
 require('./routes/api/spacesAPIv1.0')(app, spacesRepository);
-require('./routes/reservations.js')(app, reservationsRepository, spacesRepository);
-app.use('/', indexRouter);
 
-// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use(function (req, res, next) {
     next(createError(404));
 });
 
-// ─── Error handler ────────────────────────────────────────────────────────────
 app.use(function (err, req, res, next) {
     res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.locals.error = app.get('env') === 'development' ? err : {};
     res.status(err.status || 500);
     res.render('error');
 });

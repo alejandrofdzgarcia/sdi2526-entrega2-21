@@ -20,9 +20,9 @@ module.exports = function (app, spacesRepository, maintenanceRepository, reserva
     // ─────────────────────────────────────────────
     function requireAdmin(req, res, next) {
         if (!req.session || !req.session.user) {
-            return res.redirect("/login?message=Debes iniciar sesión&messageType=alert-warning");
+            return res.redirect("/users/login?message=Debes iniciar sesión&messageType=alert-warning");
         }
-        if (req.session.user.role !== "Administrador") {
+        if (req.session.role !== "Administrador") {
             return res.redirect("/spaces/list?message=Acceso denegado&messageType=alert-danger");
         }
         next();
@@ -33,7 +33,7 @@ module.exports = function (app, spacesRepository, maintenanceRepository, reserva
     // ─────────────────────────────────────────────
     function requireLogin(req, res, next) {
         if (!req.session || !req.session.user) {
-            return res.redirect("/login?message=Debes iniciar sesión&messageType=alert-warning");
+            return res.redirect("/users/login?message=Debes iniciar sesión&messageType=alert-warning");
         }
         next();
     }
@@ -124,7 +124,7 @@ module.exports = function (app, spacesRepository, maintenanceRepository, reserva
             if (err) {
                 return res.redirect("/?message=Error al cerrar sesión&messageType=alert-danger");
             }
-            res.redirect("/login?message=Ha cerrado sesión correctamente&messageType=alert-success");
+            res.redirect("/users/login?message=Ha cerrado sesión correctamente&messageType=alert-success");
         });
     });
 

@@ -13,18 +13,14 @@ module.exports = {
         this.app = app;
     },
 
-    /**
-     * Devuelve una lista de usuarios según filtro y opciones.
-     */
-    getUsers: async function (filter, options) {
+    findUser: async function (filter, options) {
         try {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
             const usersCollection = database.collection(this.collectionName);
-            const users = await usersCollection.find(filter, options || {}).toArray();
-            return users;
+            return await usersCollection.findOne(filter, options);
         } catch (error) {
-            throw error;
+            throw (error);
         }
     },
 
@@ -47,22 +43,18 @@ module.exports = {
                 .toArray();
             return { users, total };
         } catch (error) {
-            throw error;
+            throw (error);
         }
     },
 
-    /**
-     * Busca un único usuario según filtro.
-     */
-    findUser: async function (filter, options) {
+    getUsers: async function (filter, options) {
         try {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
             const usersCollection = database.collection(this.collectionName);
-            const user = await usersCollection.findOne(filter, options || {});
-            return user;
+            return await usersCollection.find(filter, options).toArray();
         } catch (error) {
-            throw error;
+            throw (error);
         }
     },
 
@@ -75,13 +67,25 @@ module.exports = {
             await this.dbClient.connect();
             const database = this.dbClient.db(this.database);
             const usersCollection = database.collection(this.collectionName);
-            const result = await usersCollection.insertOne(user);
-            return result;
+            return await usersCollection.insertOne(user);
         } catch (error) {
-            throw error;
+            throw (error);
         }
     },
 
+    updatePassword: async function (dni, newPassHash) {
+        try {
+            await this.dbClient.connect();
+            const database = this.dbClient.db(this.database);
+            const usersCollection = database.collection(this.collectionName);
+            return await usersCollection.updateOne(
+                { dni: dni },
+                { $set: { password: newPassHash } }
+            );
+        } catch (error) {
+            throw (error);
+        }
+    },
     /**
      * Actualiza un usuario existente.
      */
