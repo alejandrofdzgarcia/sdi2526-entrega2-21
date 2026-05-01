@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../assets/UserReservations.css";
 
 
-const UserReservations = () => {
+const UserReservations = ({ onEdit }) => {
 
     const [reservations, setReservations] = useState([]);
     const [filterStatus, setFilterStatus] = useState("");
