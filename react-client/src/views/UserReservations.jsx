@@ -47,6 +47,7 @@ const UserReservations = () => {
             <div className="filter-container" style={{ maxWidth: "250px" }}>
                 <label className="form-label">Filtrar por estado:</label>
                 <select
+                    id="statusFilter"
                     className="form-select"
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}

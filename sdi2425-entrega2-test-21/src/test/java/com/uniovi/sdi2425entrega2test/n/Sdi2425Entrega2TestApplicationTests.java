@@ -201,12 +201,12 @@ class Sdi2425Entrega2TestApplicationTests {
         PO_View.checkElementBy(driver, "text", "Fin");
         PO_View.checkElementBy(driver, "text", "Estado");
 
-        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
         //probar paginación
         PO_PrivateView.checkPagination(driver);
-        filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         //Assertions.assertTrue(false, "PR23 sin hacer");
     }
@@ -222,8 +222,8 @@ class Sdi2425Entrega2TestApplicationTests {
         assertTrue(driver.getCurrentUrl().contains("searchSpace="), "La URL debe contener el filtro por espacio");
         PO_PrivateView.checkPagination(driver);
         assertTrue(driver.getCurrentUrl().contains("searchSpace="), "El filtro de espacio debe mantenerse al cambiar de página");
-        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         //assertTrue(false, "PR24 sin hacer");
     }
@@ -239,14 +239,14 @@ class Sdi2425Entrega2TestApplicationTests {
         assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "La URL debe contener la fecha de inicio");
         assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "La URL debe contener la fecha de fin");
 
-        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         PO_PrivateView.checkPagination(driver);
         assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "El filtro de fecha debe mantenerse al cambiar de página");
         assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "El filtro de fecha debe mantenerse al cambiar de página");
-        filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
 
 
@@ -471,8 +471,8 @@ class Sdi2425Entrega2TestApplicationTests {
         PO_View.checkElementBy(driver, "text", "Estado");
 
         // //*[@id="tableReservation"]
-        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         //assertTrue(false, "PR54 sin hacer");
     }
@@ -480,7 +480,20 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(55)
     public void PR55() {
-        assertTrue(false, "PR55 sin hacer");
+        //PO_LoginView.loginAndCheck(driver, "10000001S", "Us3r@1-PASSW", "10000001S");
+        driver.navigate().to("http://localhost:3000/");
+
+        driver.findElement(By.xpath("/html/body/div/div/header/nav/button[1]")).click();
+
+        // /html/body/div/div/main/div/div[1]/select/option[3]
+        // //*[@id="statusFilter"]
+        PO_PrivateView.findAndClick(driver, "free", "//*[@id=\"statusFilter\"]/option[3]", 0);
+
+        // //*[@id="tableReservation"]
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(1, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //assertTrue(false, "PR55 sin hacer");
     }
 
     @Test
