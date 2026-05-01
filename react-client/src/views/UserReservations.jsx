@@ -74,6 +74,7 @@ const UserReservations = () => {
                             <th>Inicio</th>
                             <th>Fin</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -90,6 +91,13 @@ const UserReservations = () => {
                                         }>
                                             {r.status}
                                         </span>
+                                </td>
+                                <td>
+                                    {r.status === "ACTIVE" && (
+                                        <button onClick={() => onEdit(r)}>
+                                            Editar
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
