@@ -1,0 +1,60 @@
+{% extends "layout.twig" %}
+{% block title %}Gestión de Espacios{% endblock %}
+{% block main_container %}
+
+    <div class="container" id="main-container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>Gestión de Espacios</h2>
+                <a href="/admin/spaces/new" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span> Nuevo Espacio
+                </a>
+                <a href="/admin/maintenance/list" class="btn btn-warning" style="margin-left:8px">
+                    <span class="glyphicon glyphicon-wrench"></span> Bloqueos de Mantenimiento
+                </a>
+                <br><br>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead>
+                <tr>
+                    <th>Nombre</th><th>Tipo</th><th>Ubicación</th>
+                    <th>Capacidad</th><th>Estado</th><th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for space in spaces %}
+                    <tr class="{% if not space.active %}danger{% endif %}">
+                        <td>{{ space.name }}</td>
+                        <td>{{ space.type }}</td>
+                        <td>{{ space.location }}</td>
+                        <td>{{ space.capacity }}</td>
+                        <td>
+                            {% if space.active %}
+                                <span class="label label-success">Activo</span>
+                            {% else %}
+                                <span class="label label-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/admin/spaces/{{ space._id }}/edit" class="btn btn-xs btn-primary">Editar</a>
+                            <form method="post" action="/admin/spaces/{{ space._id }}/toggle" style="display:inline-block">
+                                <button type="submit" class="btn btn-xs {% if space.active %}btn-danger{% else %}btn-success{% endif %}">
+                                    {% if space.active %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            {% if space.active %}
+                                <a href="/admin/spaces/{{ space._id }}/maintenance/new" class="btn btn-xs btn-warning">+ Bloqueo</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center">No hay espacios registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,60 +1,97 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{% block title %} Space Management {% endblock %}</title>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-    <script
-            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    {% block scripts %} {% endblock %}
-  </head>
-  <body>
-    {% block body %}{% endblock %}
+<head>
+  <title>{% block title %}Space Management{% endblock %}</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  {% block scripts %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
 
-    <nav class="navbar navbar-inverse">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <img src="/images/logo.png" alt="logo"/>
-        </div>
-        <div class="collapse navbar-collapse" id="myNavbar">
-          <ul class="nav navbar-nav">
-            <li id="myspaces"><a href="/spaces/list">Espacios</a></li>
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Registrate</a></li>
-            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Identifícate</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <div class="container">
-      <div class="container">
-        <script>
-          let params = new URLSearchParams(location.search);
-          let message = params.get("message");
-          let messageType = params.get("messageType");
-          if (message !== null && message !== "") {
-            if (messageType === "") {
-              messageType = 'alert-info';
-            }
-            $(".container")
-                    .append("<div class='alert " + messageType + "'>" + message + " </div>");
-          }
-        </script>
-        <!-- Contenido -->
-        {% block main_container %}
-          <!-- Posible contenido por defecto -->
-        {% endblock %}
-      </div>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">SDI Reservas</a>
     </div>
-  </body>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+
+        {% if user %}
+          {# Menú usuario autenticado #}
+          <li><a href="/spaces/list">Espacios</a></li>
+
+          {% if user.role == 'Administrador' %}
+            {# Menú exclusivo Administrador #}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Administración <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="/admin/spaces/list">Gestión de Espacios</a></li>
+                <li><a href="/admin/maintenance/list">Bloqueos de Mantenimiento</a></li>
+                <li><a href="/admin/reservations/list">Listado Global de Reservas</a></li>
+                <li><a href="/admin/users/list">Listado de Usuarios</a></li>
+              </ul>
+            </li>
+          {% endif %}
+        {% endif %}
+
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        {% if user %}
+          <li class="navbar-text">
+            Hola, <strong>{{ user.name }}</strong>
+            {% if user.role == 'Administrador' %}
+              <span class="label label-danger" style="margin-left:4px">Admin</span>
+            {% endif %}
+          </li>
+          <li>
+            {# W3: Botón cerrar sesión visible SOLO para autenticados #}
+            <form method="post" action="/logout" style="display:inline; margin:0; padding:0">
+              <button type="submit" class="btn btn-link navbar-btn" id="btn-logout"
+                      style="color:#9d9d9d; padding: 15px">
+                <span class="glyphicon glyphicon-log-out"></span> Cerrar Sesión
+              </button>
+            </form>
+          </li>
+        {% else %}
+          <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Registrarte</a></li>
+          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Identificarte</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="container">
+    <script>
+      let params = new URLSearchParams(location.search);
+      let message = params.get("message");
+      let messageType = params.get("messageType");
+      if (message !== null && message !== "") {
+        if (!messageType || messageType === "") {
+          messageType = 'alert-info';
+        }
+        $(".container").first()
+                .prepend("<div class='alert " + messageType + " alert-dismissible'>" +
+                        "<button type='button' class='close' data-dismiss='alert'>&times;</button>" +
+                        message + "</div>");
+      }
+    </script>
+    {% block main_container %}{% endblock %}
+  </div>
+</div>
+</body>
 </html>
