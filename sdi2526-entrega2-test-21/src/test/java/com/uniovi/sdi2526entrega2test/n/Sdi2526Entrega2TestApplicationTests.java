@@ -80,6 +80,26 @@ class Sdi2425Entrega2TestApplicationTests {
         driver.quit();
     }
 
+    // ─── API Helpers ──────────────────────────────────────────────────────────
+
+    private String getToken(String dni, String password) {
+        String loginURL = URL + "/api/users/login";
+        RequestSpecification request = RestAssured.given();
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("dni", dni);
+        requestParams.put("password", password);
+        request.header("Content-Type", "application/json");
+        request.body(requestParams.toJSONString());
+        Response response = request.post(loginURL);
+        return response.jsonPath().getString("token");
+    }
+
+    private String getSpaceIdByName(String name) {
+        Response response = RestAssured.given()
+                .get(URL + "/api/v1.0/spaces");
+        return response.jsonPath().getString("find { it.name == '" + name + "' }._id");
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private void loginAsAdmin() {
@@ -642,42 +662,118 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(38)
     public void PR38() {
-        final String RestAssuredURL = "http://localhost:8081/api/v1.0/users/login";
-        // 2. Preparamos el parámetro en formato JSON
+        final String RestAssuredURL = URL + "/api/users/login";
         RequestSpecification request = RestAssured.given();
         JSONObject requestParams = new JSONObject();
-        requestParams.put("email", "delacal@uniovi.es");
-        requestParams.put("password", "1234");
+        requestParams.put("dni", "12345678Z");
+        requestParams.put("password", "@Dm1n1str@D0r");
         request.header("Content-Type", "application/json");
         request.body(requestParams.toJSONString());
-        // 3. Hacemos la petición
         Response response = request.post(RestAssuredURL);
-        // 4. Comprobamos que el servicio ha tenido exito
         Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertNotNull(response.jsonPath().getString("token"));
     }
 
-    @Test
-    @Order(39)
-    public void PR39() {
-        Assertions.assertTrue(false, "PR39 sin hacer");
+    /**
+     * [PR39] Registrar una reserva válida (usuario estándar).
+     * Debe devolver 201 Created.
+     */
+    @Test @Order(39)
+    void PR39() {
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+        String spaceId = getSpaceIdByName("Sala A");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        JSONObject params = new JSONObject();
+        params.put("spaceId", spaceId);
+        params.put("startDate", "2026-06-01T10:00:00");
+        params.put("endDate", "2026-06-01T12:00:00");
+        params.put("userDni", "10000001S");
+        params.put("reason", "Reserva PR39");
+
+        request.body(params.toJSONString());
+        Response response = request.post(URL + "/api/v1.0/reservations");
+        assertEquals(201, response.getStatusCode());
+        assertNotNull(response.jsonPath().getString("reservationId"));
     }
 
-    @Test
-    @Order(40)
-    public void PR40() {
-        Assertions.assertTrue(false, "PR40 sin hacer");
+    /**
+     * [PR40] Registrar una reserva inválida (inicio posterior al fin).
+     * Debe devolver 400 Bad Request.
+     */
+    @Test @Order(40)
+    void PR40() {
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+        String spaceId = getSpaceIdByName("Sala A");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        JSONObject params = new JSONObject();
+        params.put("spaceId", spaceId);
+        params.put("startDate", "2026-06-02T12:00:00"); // Inicio después
+        params.put("endDate", "2026-06-02T10:00:00");   // de fin
+        params.put("userDni", "10000001S");
+
+        request.body(params.toJSONString());
+        Response response = request.post(URL + "/api/v1.0/reservations");
+        assertEquals(400, response.getStatusCode());
     }
 
-    @Test
-    @Order(41)
-    public void PR41() {
-        Assertions.assertTrue(false, "PR41 sin hacer");
+    /**
+     * [PR41] Intentar crear una reserva solapada en el mismo espacio (debe fallar).
+     * El seed tiene una reserva en "Sala A" el 2026-05-10 de 09:00 a 11:00.
+     * Debe devolver 409 Conflict.
+     */
+    @Test @Order(41)
+    void PR41() {
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+        String spaceId = getSpaceIdByName("Sala A");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        JSONObject params = new JSONObject();
+        params.put("spaceId", spaceId);
+        params.put("startDate", "2026-05-10T10:00:00"); // Se solapa (09-11)
+        params.put("endDate", "2026-05-10T12:00:00");
+        params.put("userDni", "10000001S");
+
+        request.body(params.toJSONString());
+        Response response = request.post(URL + "/api/v1.0/reservations");
+        assertEquals(409, response.getStatusCode());
+        assertTrue(response.getBody().asString().contains("horario"));
     }
 
-    @Test
-    @Order(42)
-    public void PR42() {
-        Assertions.assertTrue(false, "PR42 sin hacer");
+    /**
+     * [PR42] Intentar reservar dentro de un bloqueo (debe fallar).
+     * El seed tiene un bloqueo en "Sala B" el 2026-05-20 de 07:00 a 09:00.
+     * Debe devolver 409 Conflict.
+     */
+    @Test @Order(42)
+    void PR42() {
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+        String spaceId = getSpaceIdByName("Sala B");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        JSONObject params = new JSONObject();
+        params.put("spaceId", spaceId);
+        params.put("startDate", "2026-05-20T08:00:00"); // Se solapa con bloqueo (07-09)
+        params.put("endDate", "2026-05-20T10:00:00");
+        params.put("userDni", "10000001S");
+
+        request.body(params.toJSONString());
+        Response response = request.post(URL + "/api/v1.0/reservations");
+        assertEquals(409, response.getStatusCode());
+        assertTrue(response.getBody().asString().contains("mantenimiento"));
     }
 
     @Test
