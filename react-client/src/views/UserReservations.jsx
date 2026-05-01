@@ -53,7 +53,7 @@ const UserReservations = ({ onEdit }) => {
                 >
                     <option value="">Todas</option>
                     <option value="ACTIVE">Activas</option>
-                    <option value="CANCELADA">Canceladas</option>
+                    <option value="CANCELLED">Canceladas</option>
                 </select>
             </div>
 
