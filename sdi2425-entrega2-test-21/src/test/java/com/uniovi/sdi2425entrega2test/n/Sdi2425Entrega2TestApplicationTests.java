@@ -268,7 +268,7 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(28)
     public void PR28() {
-        //PO_LoginView.loginAndCheck(driver, "10000001S", "Us3r@1-PASSW", "10000001S");
+        //PO_LoginView.loginAndCheck(driver, "12345678Z", "@Dm1n1str@D0r", "10000001S");
         driver.navigate().to(URL + "/spaces/list");
 
         driver.findElement(By.xpath("/html/body/div/div/div[2]/table/tbody/tr[1]/td[6]/a")).click();
@@ -460,7 +460,21 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(54)
     public void PR54() {
-        assertTrue(false, "PR54 sin hacer");
+        //PO_LoginView.loginAndCheck(driver, "10000001S", "Us3r@1-PASSW", "10000001S");
+        driver.navigate().to("http://localhost:3000/");
+
+        driver.findElement(By.xpath("/html/body/div/div/header/nav/button[1]")).click();
+
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+        PO_View.checkElementBy(driver, "text", "Estado");
+
+        // //*[@id="tableReservation"]
+        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //assertTrue(false, "PR54 sin hacer");
     }
 
     @Test
