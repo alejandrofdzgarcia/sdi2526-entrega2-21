@@ -1,0 +1,61 @@
+{% extends "layout.twig" %}
+{% block title %}Listado de Usuarios{% endblock %}
+{% block main_container %}
+
+<div class="container" id="main-container">
+    <h2>Listado de Usuarios del Sistema</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Rol</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>{{ u.dni }}</td>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.lastname }}</td>
+                    <td>
+                        {% if u.role == 'Administrador' %}
+                            <span class="label label-danger">Administrador</span>
+                        {% else %}
+                            <span class="label label-info">{{ u.role }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No hay usuarios registrados.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if pages is not empty %}
+    <nav>
+        <ul class="pagination">
+            <li class="{% if currentPage == 1 %}disabled{% endif %}">
+                <a href="/admin/users/list?page={{ currentPage - 1 }}">«</a>
+            </li>
+            {% for p in pages %}
+                <li class="{% if p == currentPage %}active{% endif %}">
+                    <a href="/admin/users/list?page={{ p }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="{% if currentPage == lastPage %}disabled{% endif %}">
+                <a href="/admin/users/list?page={{ currentPage + 1 }}">»</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% endblock %}
