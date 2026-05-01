@@ -28,12 +28,12 @@ app.use(session({
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
-app.get('/test/reset', async function(req, res) {
+app.get('/test/reset', async function (req, res) {
     try {
         // Ejecutar el mismo código que tu seed.js
         await resetDatabase(db);
         res.json({ ok: true });
-    } catch(e) {
+    } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
@@ -42,9 +42,9 @@ app.set('crypto', crypto);
 app.set('clave', 'abcdefg');
 
 app.use(function (req, res, next) {
-    res.locals.sessionUser   = req.session.user   || null;
+    res.locals.sessionUser = req.session.user || null;
     res.locals.sessionNombre = req.session.nombre || null;
-    res.locals.sessionRole   = req.session.role   || null;
+    res.locals.sessionRole = req.session.role || null;
     next();
 });
 
@@ -65,10 +65,10 @@ const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
 const dbClient = new MongoClient(url);
 
-const usersRepository        = require('./repositories/usersRepository');
-const spacesRepository       = require('./repositories/spacesRepository');
+const usersRepository = require('./repositories/usersRepository');
+const spacesRepository = require('./repositories/spacesRepository');
 const reservationsRepository = require('./repositories/reservationsRepository');
-const maintenanceRepository  = require('./repositories/maintenanceRepository');
+const maintenanceRepository = require('./repositories/maintenanceRepository');
 
 usersRepository.init(app, dbClient);
 spacesRepository.init(app, dbClient);
@@ -76,14 +76,19 @@ reservationsRepository.init(app, dbClient);
 maintenanceRepository.init(app, dbClient);
 
 const adminSessionRouter = require('./routes/adminSessionRouter');
-const userTokenRouter    = require('./routes/userTokenRouter');
+const userSessionRouter = require('./routes/userSessionRouter');
+const userTokenRouter = require('./routes/userTokenRouter');
 
 app.use('/admin', adminSessionRouter);
+app.use('/spaces', userSessionRouter);
+app.use('/users/change-password', userSessionRouter);
 app.use('/api/v1.0/reservations', userTokenRouter);
+app.use('/', indexRouter);
+
 
 require('./routes/users')(app, usersRepository);
 require('./routes/spaces')(app, spacesRepository, maintenanceRepository, reservationsRepository, usersRepository);
-require('./routes/reservations')(app, reservationsRepository, spacesRepository);
+require('./routes/reservations')(app, reservationsRepository, spacesRepository, usersRepository);
 
 require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);

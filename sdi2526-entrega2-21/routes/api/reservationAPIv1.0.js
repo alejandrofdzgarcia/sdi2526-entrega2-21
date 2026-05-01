@@ -7,19 +7,19 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
-             let user = res.user || "";
+            let user = res.user || "";
 
             user = "10000001S"
 
-             if(user === ""){
-                 return res.status(500).json({ error: "Error: Usuario no autenticado"});
-             }
+            if (user === "") {
+                return res.status(500).json({ error: "Error: Usuario no autenticado" });
+            }
 
-             let filter = { userDni: user };
+            let filter = { userDni: user };
 
-             let reservations = await reservationsRepository.getReservations(filter, {});
+            let reservations = await reservationsRepository.getReservations(filter, {});
 
-             //Se obtienen todos los espacios
+            //Se obtienen todos los espacios
             const spaces = await spacesRepository.getSpaces({}, {});
 
             //se mapean los nombres para acceder a ellos por su id
@@ -48,6 +48,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 });
 
                 return {
+                    id: r._id.toString(),
                     user: r.userDni,
                     space: spaceMap[r.spaceId.toString()] || "Error Espacio",
                     startDate: startDate,
@@ -56,11 +57,13 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 };
             });
 
-             res.status(200).json(resultReservations);
+            res.status(200).json(resultReservations);
 
-        }catch (error) {
-            res.status(500).json({ error: "Error interno del servidor al " +
-                    "obtener las reservas propias: " + error.message });
+        } catch (error) {
+            res.status(500).json({
+                error: "Error interno del servidor al " +
+                    "obtener las reservas propias: " + error.message
+            });
         }
     });
 
