@@ -3,7 +3,43 @@ const { ObjectId } = require("mongodb");
 module.exports = function (app, spacesRepository, reservationsRepository, maintenanceRepository) {
 
     /**
-     * Devuelve las la info de las reservas del usuario logeado
+     * @swagger
+     * /api/v1.0/reservations:
+     *   get:
+     *     summary: Obtener reservas del usuario autenticado
+     *     description: Devuelve todas las reservas asociadas al usuario logeado con formato de fecha legible.
+     *     tags:
+     *       - Reservations
+     *     responses:
+     *       200:
+     *         description: Lista de reservas del usuario
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     example: "64f123abc456def789"
+     *                   user:
+     *                     type: string
+     *                     example: "10000001S"
+     *                   space:
+     *                     type: string
+     *                     example: "Sala de reuniones"
+     *                   startDate:
+     *                     type: string
+     *                     example: "01/10/2025, 10:00"
+     *                   endDate:
+     *                     type: string
+     *                     example: "01/10/2025, 12:00"
+     *                   status:
+     *                     type: string
+     *                     example: "ACTIVE"
+     *       500:
+     *         description: Error interno del servidor
      */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
@@ -67,6 +103,55 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         }
     });
 
+    /**
+     * @swagger
+     * /api/v1.0/reservations:
+     *   post:
+     *     summary: Crear una nueva reserva
+     *     description: Permite registrar una nueva reserva si no hay conflictos de horario ni mantenimiento.
+     *     tags:
+     *       - Reservations
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - spaceId
+     *               - startDate
+     *               - endDate
+     *               - userDni
+     *             properties:
+     *               spaceId:
+     *                 type: string
+     *                 example: "64f123abc456def789"
+     *               startDate:
+     *                 type: string
+     *                 format: date-time
+     *                 example: "2025-10-01T10:00:00Z"
+     *               endDate:
+     *                 type: string
+     *                 format: date-time
+     *                 example: "2025-10-01T12:00:00Z"
+     *               reason:
+     *                 type: string
+     *                 example: "Reunión de equipo"
+     *               userDni:
+     *                 type: string
+     *                 example: "10000001S"
+     *     responses:
+     *       201:
+     *         description: Reserva creada correctamente
+     *       400:
+     *         description: Error en los datos enviados
+     *       404:
+     *         description: Espacio no encontrado
+     *       409:
+     *         description: Conflicto de horario o mantenimiento
+     *       500:
+     *         description: Error interno del servidor
+     */
     app.post('/api/v1.0/reservations', async (req, res) => {
         try {
             const { spaceId, startDate, endDate, reason, userDni } = req.body;
@@ -138,6 +223,45 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         }
     });
 
+    /**
+     * @swagger
+     * /api/v1.0/reservations/{id}:
+     *   delete:
+     *     summary: Cancelar una reserva
+     *     description: Permite cancelar una reserva si pertenece al usuario.
+     *     tags:
+     *       - Reservations
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: ID de la reserva
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - userDni
+     *             properties:
+     *               userDni:
+     *                 type: string
+     *                 example: "10000001S"
+     *     responses:
+     *       200:
+     *         description: Reserva cancelada correctamente
+     *       400:
+     *         description: Error en la solicitud
+     *       403:
+     *         description: No autorizado para cancelar esta reserva
+     *       404:
+     *         description: Reserva no encontrada
+     *       500:
+     *         description: Error interno del servidor
+     */
     app.delete('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
