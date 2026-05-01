@@ -231,7 +231,26 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(25)
     public void PR25() {
-        assertTrue(false, "PR25 sin hacer");
+        //PO_LoginView.loginAndCheck(driver, "12345678Z", "@Dm1n1str@D0r", "Gestión de Espacios");
+        driver.navigate().to(URL + "/admin/reservations/list");
+        driver.findElement(By.id("startDate")).sendKeys("2026-05-01");
+        driver.findElement(By.id("endDate")).sendKeys("2026-05-05");
+
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "La URL debe contener la fecha de inicio");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "La URL debe contener la fecha de fin");
+
+        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "El filtro de fecha debe mantenerse al cambiar de página");
+        filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+
+
+        //assertTrue(false, "PR25 sin hacer");
     }
 
     @Test
