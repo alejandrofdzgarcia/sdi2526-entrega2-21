@@ -26,61 +26,40 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         try {
             let user = res.user || "";
 
-            user = "10000001S"
-
             if (user === "") {
                 return res.status(500).json({ error: "Error: Usuario no autenticado" });
             }
 
             let filter = { userDni: user };
-
             let reservations = await reservationsRepository.getReservations(filter, {});
 
-            //Se obtienen todos los espacios
             const spaces = await spacesRepository.getSpaces({}, {});
-
-            //se mapean los nombres para acceder a ellos por su id
             const spaceMap = {};
-            spaces.forEach(s => {
-                spaceMap[s._id.toString()] = s.name;
-            });
+            spaces.forEach(s => { spaceMap[s._id.toString()] = s.name; });
 
-            //se formatea la fecha de las reservas y se mapean
-            const resultReservations = reservations.map(r => {
-
-                const startDate = new Date(r.startDate).toLocaleString("es-ES", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                });
-
-                const endDate = new Date(r.endDate).toLocaleString("es-ES", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                });
-
-                return {
-                    id: r._id.toString(),
-                    user: r.userDni,
-                    space: spaceMap[r.spaceId.toString()] || "Error Espacio",
-                    startDate: startDate,
-                    endDate: endDate,
-                    status: r.status
-                };
-            });
+            const resultReservations = reservations.map(r => ({
+                _id:       r._id,
+                spaceId:   r.spaceId,
+                startDateRaw: r.startDate,
+                endDateRaw:   r.endDate,
+                reason:    r.reason || "",
+                userDni:   r.userDni,
+                space:     spaceMap[r.spaceId.toString()] || "Error Espacio",
+                startDate: new Date(r.startDate).toLocaleString("es-ES", {
+                    day: "2-digit", month: "2-digit", year: "numeric",
+                    hour: "2-digit", minute: "2-digit"
+                }),
+                endDate: new Date(r.endDate).toLocaleString("es-ES", {
+                    day: "2-digit", month: "2-digit", year: "numeric",
+                    hour: "2-digit", minute: "2-digit"
+                }),
+                status: r.status
+            }));
 
             res.status(200).json(resultReservations);
 
         } catch (error) {
-            res.status(500).json({
-                error: "Error interno del servidor al " +
-                    "obtener las reservas propias: " + error.message
-            });
+            res.status(500).json({ error: "Error interno del servidor al obtener las reservas propias: " + error.message });
         }
     });
 
@@ -174,6 +153,80 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 });
             } else {
                 res.status(500).json({ error: "No se pudo registrar la reserva" });
+            }
+
+        } catch (error) {
+            res.status(500).json({ error: "Error interno del servidor: " + error.message });
+        }
+    });
+
+    app.put('/api/v1.0/reservations/:id', async (req, res) => {
+        try {
+            const reservationId = req.params.id;
+            const { userDni, spaceId, startDate, endDate, reason } = req.body;
+
+            if (!userDni) {
+                return res.status(400).json({ error: "Falta el DNI del usuario" });
+            }
+
+            // 1. Buscar la reserva
+            const reservations = await reservationsRepository.getReservations(
+                { _id: new ObjectId(reservationId) }
+            );
+            if (reservations.length === 0) {
+                return res.status(404).json({ error: "Reserva no encontrada" });
+            }
+            const reservation = reservations[0];
+
+            // 2. Verificar propiedad
+            if (reservation.userDni !== userDni) {
+                return res.status(403).json({ error: "Solo puedes editar tus propias reservas" });
+            }
+
+            // 3. No editar si está cancelada
+            if (reservation.status === "CANCELADA") {
+                return res.status(400).json({ error: "No se puede editar una reserva cancelada" });
+            }
+
+            // 4. Validar fechas
+            const start = new Date(startDate);
+            const end   = new Date(endDate);
+            const now   = new Date();
+
+            if (start >= end) return res.status(400).json({ error: "Rango de fechas inválido" });
+            if (start < now)  return res.status(400).json({ error: "La reserva no puede ser en el pasado" });
+
+            // 5. Validar espacio
+            const targetSpaceId = spaceId ? new ObjectId(spaceId) : reservation.spaceId;
+            const space = await spacesRepository.findSpace({ _id: targetSpaceId });
+            if (!space)        return res.status(404).json({ error: "Espacio no encontrado" });
+            if (!space.active) return res.status(400).json({ error: "El espacio está desactivado" });
+
+            // 6. Comprobar solapamientos (excluyendo esta misma reserva)
+            const overlapFilter = {
+                _id: { $ne: new ObjectId(reservationId) },
+                spaceId: targetSpaceId,
+                status: "ACTIVE",
+                startDate: { $lt: end },
+                endDate: { $gt: start }
+            };
+
+            const otherRes = await reservationsRepository.getReservations(overlapFilter);
+            if (otherRes.length > 0) return res.status(409).json({ error: "Ya existe una reserva en ese horario" });
+
+            const blocks = await maintenanceRepository.getMaintenanceBlocks(overlapFilter);
+            if (blocks.length > 0) return res.status(409).json({ error: "Hay un bloqueo de mantenimiento programado" });
+
+            // 7. Actualizar
+            const result = await reservationsRepository.updateReservation(
+                { _id: new ObjectId(reservationId) },
+                { spaceId: targetSpaceId, startDate: start, endDate: end, reason: reason || "" }
+            );
+
+            if (result.modifiedCount > 0) {
+                res.status(200).json({ message: "Reserva actualizada correctamente" });
+            } else {
+                res.status(500).json({ error: "No se pudo actualizar la reserva" });
             }
 
         } catch (error) {
