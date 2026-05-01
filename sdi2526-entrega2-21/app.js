@@ -28,6 +28,16 @@ app.use(session({
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
+app.get('/test/reset', async function(req, res) {
+    try {
+        // Ejecutar el mismo código que tu seed.js
+        await resetDatabase(db);
+        res.json({ ok: true });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.set('crypto', crypto);
 app.set('clave', 'abcdefg');
 

@@ -65,18 +65,25 @@
 
     <div class="container">
       <div class="container" id="main-container">
-        <script>
-          let params = new URLSearchParams(location.search);
-          let message = params.get("message");
-          let messageType = params.get("messageType");
-          if (message !== null && message !== "") {
-            if (messageType === "") {
-              messageType = 'alert-info';
-            }
-            $("#main-container")
-                    .append("<div class='alert " + messageType + "'>" + message + " </div>");
-          }
-        </script>
+          <script>
+              window.addEventListener('DOMContentLoaded', function() {
+                  var params = new URLSearchParams(location.search);
+                  var message = params.get("message");
+                  var messageType = params.get("messageType");
+                  if (message !== null && message !== "") {
+                      if (!messageType || messageType === "") {
+                          messageType = 'alert-info';
+                      }
+                      var div = document.createElement('div');
+                      div.className = 'alert ' + messageType;
+                      div.textContent = message;
+                      var container = document.getElementById('main-container');
+                      if (container) {
+                          container.insertBefore(div, container.firstChild);
+                      }
+                  }
+              });
+          </script>
         <!-- Contenido -->
         {% block main_container %}
           <!-- Posible contenido por defecto -->

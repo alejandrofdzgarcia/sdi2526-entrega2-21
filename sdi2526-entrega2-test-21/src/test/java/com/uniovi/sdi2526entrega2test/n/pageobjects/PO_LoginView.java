@@ -1,4 +1,4 @@
-package com.uniovi.sdi2425entrega2test.n.pageobjects;
+package com.uniovi.sdi2526entrega2test.n.pageobjects;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
 public class PO_LoginView extends PO_NavView {
 
 	static public void fillLoginForm(WebDriver driver, String dnip, String passwordp) {
-		WebElement dni = driver.findElement(By.name("username"));
+		WebElement dni = driver.findElement(By.name("dni"));
 		dni.click();
 		dni.clear();
 		dni.sendKeys(dnip);
@@ -29,5 +29,13 @@ public class PO_LoginView extends PO_NavView {
 	static public void logout(WebDriver driver, String checkKeyText) {
 		String loginText = getP().getString(checkKeyText, PO_Properties.getSPANISH());
 		clickOption(driver, "logout", "text", loginText);
+	}
+
+	/**
+	 * Overload sin checkKeyText: busca el botón de logout directamente por id.
+	 * Necesario porque los tests llaman a PO_LoginView.logout(driver) sin argumentos extra.
+	 */
+	static public void logout(WebDriver driver) {
+		driver.findElement(By.cssSelector("a[href='/users/logout']")).click();
 	}
 }

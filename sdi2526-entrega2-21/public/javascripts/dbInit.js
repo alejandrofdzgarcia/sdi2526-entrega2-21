@@ -92,8 +92,11 @@ const databaseName = "spaceReservationManagement";
 
                 // Generar fechas futuras secuenciales para evitar solapes.
                 // Cada usuario reserva en días diferentes, y cada reserva es a una hora diferente.
-                const start = new Date(now.getTime() + (1000 * 60 * 60 * 24 * (userIndex + 1)) + (i * 1000 * 60 * 60 * 3));
-                const end = new Date(start.getTime() + 1000 * 60 * 60 * 2); // Duración de 2 horas
+                const day = String(15 + userIndex).padStart(2, '0');
+                const month = String((i % 6) + 1).padStart(2, '0');
+                const hour = String(9 + i).padStart(2, '0');
+                const start = new Date(`2026-${month}-${day}T${hour}:00:00`);
+                const end = new Date(start.getTime() + 1000 * 60 * 60 * 2);
 
                 reservations.push({
                     userDni: user.dni,

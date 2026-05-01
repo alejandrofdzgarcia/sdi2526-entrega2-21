@@ -1,4 +1,4 @@
-package com.uniovi.sdi2425entrega2test.n.util;
+package com.uniovi.sdi2526entrega2test.n.util;
 
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
