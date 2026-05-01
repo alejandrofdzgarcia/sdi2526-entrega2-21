@@ -15,14 +15,14 @@ public class PO_SpacesView extends PO_NavView {
      * Si un parámetro es null, ese campo no se toca (útil en edición parcial).
      *
      * IDs del formulario (según el template Twig):
-     *   name, type (select), location, capacity, description
+     * name, type (select), location, capacity, description
      */
     public static void fillSpaceForm(WebDriver driver,
-                                     String name,
-                                     String type,
-                                     String location,
-                                     String capacity,
-                                     String description) {
+            String name,
+            String type,
+            String location,
+            String capacity,
+            String description) {
         if (name != null) {
             WebElement nameField = driver.findElement(By.id("name"));
             if (name.isEmpty()) {
@@ -98,14 +98,14 @@ public class PO_SpacesView extends PO_NavView {
      *
      * IDs del formulario (según el template Twig): startDate, endDate, reason
      *
-     * @param startDate  Formato "yyyy-MM-ddTHH:mm", p.ej. "2099-01-01T09:00"
-     * @param endDate    Formato "yyyy-MM-ddTHH:mm", p.ej. "2099-01-01T18:00"
-     * @param reason     Texto libre del motivo del bloqueo
+     * @param startDate Formato "yyyy-MM-ddTHH:mm", p.ej. "2099-01-01T09:00"
+     * @param endDate   Formato "yyyy-MM-ddTHH:mm", p.ej. "2099-01-01T18:00"
+     * @param reason    Texto libre del motivo del bloqueo
      */
     public static void fillMaintenanceForm(WebDriver driver,
-                                           String startDate,
-                                           String endDate,
-                                           String reason) {
+            String startDate,
+            String endDate,
+            String reason) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
 
         js.executeScript(
@@ -120,6 +120,18 @@ public class PO_SpacesView extends PO_NavView {
         reasonField.clear();
         reasonField.sendKeys(reason);
 
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+    }
+    public static void filterSpaces(WebDriver driver, String type, String capacity) {
+        if (type != null) {
+            Select typeSelect = new Select(driver.findElement(By.id("type")));
+            typeSelect.selectByValue(type);
+        }
+        if (capacity != null) {
+            WebElement capField = driver.findElement(By.id("capacity"));
+            capField.clear();
+            capField.sendKeys(capacity);
+        }
         driver.findElement(By.cssSelector("button[type='submit']")).click();
     }
 }

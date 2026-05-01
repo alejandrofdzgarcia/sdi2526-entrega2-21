@@ -97,7 +97,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * El formulario va a /users/signup (POST).
      * Tras el registro exitoso debe redirigir al listado de espacios.
      */
-    @Test @Order(1)
+    @Test
+    @Order(1)
     void PR01() {
         driver.navigate().to(URL + "/users/signup");
         PO_SignUpView.fillForm(driver, "87654321Z", "Maria", "Garcia",
@@ -110,7 +111,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR02] Registro con nombre, apellidos y DNI en blanco.
      * Debe mostrar error de campos obligatorios y NO redirigir.
      */
-    @Test @Order(2)
+    @Test
+    @Order(2)
     void PR02() {
         driver.navigate().to(URL + "/users/signup");
         // Quitar required HTML5 para poder enviar vacío
@@ -128,7 +130,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR03] Registro con DNI ya registrado (12345678Z = admin).
      * Debe mostrar error de DNI duplicado.
      */
-    @Test @Order(3)
+    @Test
+    @Order(3)
     void PR03() {
         driver.navigate().to(URL + "/users/signup");
         PO_SignUpView.fillForm(driver, "12345678Z", "Pedro", "Lopez",
@@ -139,10 +142,12 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR04] Registro con contraseña que no cumple requisitos (sin carácter especial).
+     * [PR04] Registro con contraseña que no cumple requisitos (sin carácter
+     * especial).
      * Debe mostrar error de contraseña inválida.
      */
-    @Test @Order(4)
+    @Test
+    @Order(4)
     void PR04() {
         driver.navigate().to(URL + "/users/signup");
         PO_SignUpView.fillForm(driver, "11223344H", "Ana", "Martinez",
@@ -176,7 +181,8 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(false, "PR08 sin hacer");
     }
 
-    @Test @Order(9)
+    @Test
+    @Order(9)
     void PR09() {
         loginAsAdmin();
         PO_LoginView.logout(driver);
@@ -189,7 +195,8 @@ class Sdi2425Entrega2TestApplicationTests {
     /**
      * [PR10] Sin autenticación el botón de cerrar sesión NO debe estar visible.
      */
-    @Test @Order(10)
+    @Test
+    @Order(10)
     void PR10() {
         driver.navigate().to(URL + "/users/login");
         List<WebElement> logoutBtn = driver.findElements(By.id("btn-logout"));
@@ -201,7 +208,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR11] Registrar espacio con datos válidos.
      * Debe redirigir a /admin/spaces/list con mensaje de éxito.
      */
-    @Test @Order(11)
+    @Test
+    @Order(11)
     void PR11() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/new");
@@ -217,7 +225,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR12] Registrar espacio con nombre vacío.
      * Debe mostrar error y permanecer en el formulario.
      */
-    @Test @Order(12)
+    @Test
+    @Order(12)
     void PR12() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/new");
@@ -232,7 +241,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR13] Registrar espacio con capacidad menor que 1 (capacidad = 0).
      * Debe mostrar error y permanecer en el formulario.
      */
-    @Test @Order(13)
+    @Test
+    @Order(13)
     void PR13() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/new");
@@ -245,10 +255,12 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR14] Registrar espacio con nombre duplicado activo ("Sala Turing" existe en semilla).
+     * [PR14] Registrar espacio con nombre duplicado activo ("Sala Turing" existe en
+     * semilla).
      * Debe mostrar error de nombre duplicado.
      */
-    @Test @Order(14)
+    @Test
+    @Order(14)
     void PR14() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/new");
@@ -264,7 +276,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR15] Editar espacio existente con datos válidos.
      * Los datos deben modificarse y redirigir al listado con mensaje de éxito.
      */
-    @Test @Order(15)
+    @Test
+    @Order(15)
     void PR15() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/list");
@@ -285,7 +298,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR16] Editar espacio con capacidad menor que 1.
      * Los datos NO deben modificarse y debe aparecer mensaje de error.
      */
-    @Test @Order(16)
+    @Test
+    @Order(16)
     void PR16() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/list");
@@ -299,9 +313,11 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR17] Desactivar un espacio activo y verificar que no aparece en el listado público.
+     * [PR17] Desactivar un espacio activo y verificar que no aparece en el listado
+     * público.
      */
-    @Test @Order(17)
+    @Test
+    @Order(17)
     void PR17() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/list");
@@ -318,15 +334,17 @@ class Sdi2425Entrega2TestApplicationTests {
         loginAsUser();
         driver.navigate().to(URL + "/spaces/list");
         assertTrue(driver.findElements(
-                        By.xpath("//*[contains(text(),'" + spaceName + "')]")).isEmpty(),
+                By.xpath("//*[contains(text(),'" + spaceName + "')]")).isEmpty(),
                 "El espacio desactivado no debe aparecer en el listado público");
     }
 
     /**
-     * [PR18] Activar un espacio inactivo y verificar que aparece en el listado público.
+     * [PR18] Activar un espacio inactivo y verificar que aparece en el listado
+     * público.
      * "Aula Antigua" está desactivada en los datos semilla.
      */
-    @Test @Order(18)
+    @Test
+    @Order(18)
     void PR18() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/spaces/list");
@@ -349,7 +367,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR19] Crear bloqueo de mantenimiento válido en fechas lejanas (2099).
      * Debe redirigir con mensaje de éxito.
      */
-    @Test @Order(19)
+    @Test
+    @Order(19)
     void PR19() {
         loginAsAdmin();
         PO_SpacesView.navigateToFirstMaintenanceForm(driver, URL);
@@ -365,7 +384,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * Primero crea un bloqueo base, luego intenta crear uno que lo solape.
      * Debe mostrar error de solapamiento.
      */
-    @Test @Order(20)
+    @Test
+    @Order(20)
     void PR20() {
         loginAsAdmin();
         // Crear bloqueo base en fechas únicas de esta prueba
@@ -387,7 +407,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * Las reservas semilla están en el futuro próximo (año 2026).
      * El bloqueo cubre 2026 para garantizar el solapamiento.
      */
-    @Test @Order(21)
+    @Test
+    @Order(21)
     void PR21() {
         loginAsAdmin();
         // Navegar al listado y buscar el botón de bloqueo de "Sala Turing"
@@ -413,7 +434,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR22] Crear un bloqueo, luego cancelarlo.
      * El bloqueo cancelado debe aparecer en el listado con estado CANCELADO.
      */
-    @Test @Order(22)
+    @Test
+    @Order(22)
     void PR22() {
         loginAsAdmin();
         PO_SpacesView.navigateToFirstMaintenanceForm(driver, URL);
@@ -449,16 +471,65 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(false, "PR25 sin hacer");
     }
 
+    /**
+     * [PR26] Consultar el listado de espacios disponibles (usuario estándar).
+     * Debe mostrar nombre, tipo, ubicación y capacidad.
+     */
     @Test
     @Order(26)
-    public void PR26() {
-        Assertions.assertTrue(false, "PR26 sin hacer");
+    void PR26() {
+        loginAsUser();
+        driver.navigate().to(URL + "/spaces/list");
+
+        PO_View.checkElementBy(driver, "text", "Nombre");
+        PO_View.checkElementBy(driver, "text", "Tipo");
+        PO_View.checkElementBy(driver, "text", "Localización");
+        PO_View.checkElementBy(driver, "text", "Capacidad");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//tbody/tr"));
+        assertEquals(6, rows.size(), "El listado de espacios no debe estar vacío");
+
+        // Verificar que la primera fila tiene datos en las columnas
+        WebElement firstRow = rows.get(0);
+        assertFalse(firstRow.findElement(By.xpath("td[1]")).getText().isEmpty(), "Nombre no debe estar vacío");
+        assertFalse(firstRow.findElement(By.xpath("td[2]")).getText().isEmpty(), "Tipo no debe estar vacío");
+        assertFalse(firstRow.findElement(By.xpath("td[3]")).getText().isEmpty(), "Localización no debe estar vacío");
+        assertFalse(firstRow.findElement(By.xpath("td[4]")).getText().isEmpty(), "Capacidad no debe estar vacío");
+
+        PO_LoginView.logout(driver);
     }
 
+    /**
+     * [PR27] Aplicar un filtro en el listado de espacios.
+     * Filtrar por tipo y verificar resultados. Luego por capacidad.
+     */
     @Test
     @Order(27)
-    public void PR27() {
-        Assertions.assertTrue(false, "PR27 sin hacer");
+    void PR27() {
+        loginAsUser();
+        driver.navigate().to(URL + "/spaces/list");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//tbody/tr"));
+        assertTrue(rows.size() == 6, "El listado de espacios no debe estar vacío");
+
+        PO_SpacesView.filterSpaces(driver, "SALA", null);
+        rows = driver.findElements(By.xpath("//tbody/tr"));
+        assertTrue(rows.size() == 3, "El listado de espacios no debe tener 3 salas");
+        for (WebElement row : rows) {
+            if (row.findElements(By.xpath("td")).size() > 1) {
+                assertEquals("SALA", row.findElement(By.xpath("td[2]")).getText(),
+                        "Todos los resultados deben ser de tipo SALA");
+            }
+        }
+
+        driver.navigate().to(URL + "/spaces/list");
+        PO_SpacesView.filterSpaces(driver, "", "50");
+        rows = driver.findElements(By.xpath("//tbody/tr"));
+        assertEquals(1, rows.size(), "Debe haber exactamente una fila en la tabla");
+        String message = rows.get(0).findElement(By.xpath("td")).getText();
+        assertEquals("No se encontraron espacios que coincidan con la búsqueda.", message);
+
+        PO_LoginView.logout(driver);
     }
 
     @Test
@@ -471,7 +542,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * [PR29] Consultar disponibilidad de un espacio en un rango amplio.
      * Debe mostrar eventos RESERVA o MANTENIMIENTO, o indicar que está libre.
      */
-    @Test @Order(29)
+    @Test
+    @Order(29)
     void PR29() {
         loginAsUser();
         driver.navigate().to(URL + "/spaces/list");
@@ -522,7 +594,8 @@ class Sdi2425Entrega2TestApplicationTests {
      * Debe mostrar 5 usuarios por página, tener al menos 2 páginas,
      * y el administrador debe estar visible.
      */
-    @Test @Order(34)
+    @Test
+    @Order(34)
     void PR34() {
         loginAsAdmin();
         driver.navigate().to(URL + "/admin/users/list");
