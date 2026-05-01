@@ -268,7 +268,20 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(28)
     public void PR28() {
-        assertTrue(false, "PR28 sin hacer");
+        //PO_LoginView.loginAndCheck(driver, "10000001S", "Us3r@1-PASSW", "10000001S");
+        driver.navigate().to(URL + "/spaces/list");
+
+        driver.findElement(By.xpath("/html/body/div/div/div[2]/table/tbody/tr[1]/td[6]/a")).click();
+
+        String checkText = "Aula Newton";
+        List<WebElement> result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.getFirst().getText());
+
+        checkText = "AULA";
+        result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.getFirst().getText());
+
+        //assertTrue(false, "PR28 sin hacer");
     }
 
     @Test
