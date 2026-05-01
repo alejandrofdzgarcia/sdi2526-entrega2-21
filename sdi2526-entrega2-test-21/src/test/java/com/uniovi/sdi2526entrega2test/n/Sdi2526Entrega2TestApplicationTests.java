@@ -681,7 +681,7 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test @Order(39)
     void PR39() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
-        String spaceId = getSpaceIdByName("Sala A");
+        String spaceId = getSpaceIdByName("Sala Turing");
 
         RequestSpecification request = RestAssured.given();
         request.header("token", token);
@@ -689,8 +689,8 @@ class Sdi2425Entrega2TestApplicationTests {
 
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
-        params.put("startDate", "2026-06-01T10:00:00");
-        params.put("endDate", "2026-06-01T12:00:00");
+        params.put("startDate", "2026-12-01T10:00:00");
+        params.put("endDate", "2026-12-01T12:00:00");
         params.put("userDni", "10000001S");
         params.put("reason", "Reserva PR39");
 
@@ -707,7 +707,7 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test @Order(40)
     void PR40() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
-        String spaceId = getSpaceIdByName("Sala A");
+        String spaceId = getSpaceIdByName("Sala Turing");
 
         RequestSpecification request = RestAssured.given();
         request.header("token", token);
@@ -726,13 +726,13 @@ class Sdi2425Entrega2TestApplicationTests {
 
     /**
      * [PR41] Intentar crear una reserva solapada en el mismo espacio (debe fallar).
-     * El seed tiene una reserva en "Sala A" el 2026-05-10 de 09:00 a 11:00.
+     * El seed tiene una reserva en "Sala Turing" el 2026-01-15 de 09:00 a 11:00.
      * Debe devolver 409 Conflict.
      */
     @Test @Order(41)
     void PR41() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
-        String spaceId = getSpaceIdByName("Sala A");
+        String spaceId = getSpaceIdByName("Sala Turing");
 
         RequestSpecification request = RestAssured.given();
         request.header("token", token);
@@ -740,8 +740,8 @@ class Sdi2425Entrega2TestApplicationTests {
 
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
-        params.put("startDate", "2026-05-10T10:00:00"); // Se solapa (09-11)
-        params.put("endDate", "2026-05-10T12:00:00");
+        params.put("startDate", "2026-01-15T10:00:00"); // Se solapa (09-11)
+        params.put("endDate", "2026-01-15T12:00:00");
         params.put("userDni", "10000001S");
 
         request.body(params.toJSONString());
@@ -752,22 +752,27 @@ class Sdi2425Entrega2TestApplicationTests {
 
     /**
      * [PR42] Intentar reservar dentro de un bloqueo (debe fallar).
-     * El seed tiene un bloqueo en "Sala B" el 2026-05-20 de 07:00 a 09:00.
-     * Debe devolver 409 Conflict.
+     * El seed tiene un bloqueo en "Sala Turing" para mañana (+24h).
      */
     @Test @Order(42)
     void PR42() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
-        String spaceId = getSpaceIdByName("Sala B");
+        String spaceId = getSpaceIdByName("Sala Turing");
 
         RequestSpecification request = RestAssured.given();
         request.header("token", token);
         request.header("Content-Type", "application/json");
 
+        // Calculamos una fecha para mañana (+24h)
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.DAY_OF_YEAR, 1);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        String tomorrow = sdf.format(cal.getTime());
+
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
-        params.put("startDate", "2026-05-20T08:00:00"); // Se solapa con bloqueo (07-09)
-        params.put("endDate", "2026-05-20T10:00:00");
+        params.put("startDate", tomorrow); 
+        params.put("endDate", sdf.format(new java.util.Date(cal.getTimeInMillis() + 3600000)));
         params.put("userDni", "10000001S");
 
         request.body(params.toJSONString());
@@ -782,10 +787,61 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(false, "PR43 sin hacer");
     }
 
-    @Test
-    @Order(44)
-    public void PR44() {
-        Assertions.assertTrue(false, "PR44 sin hacer");
+    /**
+     * [PR44] Cancelar una reserva propia y verificar que deja de ocupar espacio.
+     * 1. Crea reserva A.
+     * 2. Verifica que reserva B (solapada) falla.
+     * 3. Cancela reserva A.
+     * 4. Verifica que reserva B ahora tiene éxito.
+     */
+    /**
+     * [PR44] Cancelar una reserva propia y verificar que deja de ocupar espacio.
+     * Utiliza una reserva de la semilla (Sala Turing, 15 de Enero).
+     */
+    @Test @Order(44)
+    void PR44() {
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+        String spaceId = getSpaceIdByName("Sala Turing");
+        String dni = "10000001S";
+
+        // 1. Obtener la reserva de la semilla (Sala Turing, 15 de Enero 09:00)
+        Response resList = RestAssured.given()
+                .header("token", token)
+                .get(URL + "/api/v1.0/reservations");
+        
+        // Buscamos el ID de la reserva en Sala Turing que empieza a las 09:00
+        // (La fecha viene formateada como "15/01/2026, 09:00" segun el locale es-ES en el server)
+        String resId = resList.jsonPath().getString("find { it.space == 'Sala Turing' && it.startDate.contains('09:00') }.id");
+        assertNotNull(resId, "Debe existir la reserva de la semilla");
+
+        // 2. Verificar que bloquea un solape (10:00-12:00)
+        JSONObject paramsOverlap = new JSONObject();
+        paramsOverlap.put("spaceId", spaceId);
+        paramsOverlap.put("startDate", "2026-01-15T10:00:00");
+        paramsOverlap.put("endDate", "2026-01-15T12:00:00");
+        paramsOverlap.put("userDni", dni);
+
+        Response resFail = RestAssured.given()
+                .header("token", token).header("Content-Type", "application/json")
+                .body(paramsOverlap.toJSONString())
+                .post(URL + "/api/v1.0/reservations");
+        assertEquals(409, resFail.getStatusCode());
+
+        // 3. Cancelar la reserva de la semilla
+        JSONObject cancelParams = new JSONObject();
+        cancelParams.put("userDni", dni);
+        Response resCancel = RestAssured.given()
+                .header("token", token).header("Content-Type", "application/json")
+                .body(cancelParams.toJSONString())
+                .delete(URL + "/api/v1.0/reservations/" + resId);
+        assertEquals(200, resCancel.getStatusCode());
+
+        // 4. Verificar que ahora el solape tiene exito
+        Response resOk = RestAssured.given()
+                .header("token", token).header("Content-Type", "application/json")
+                .body(paramsOverlap.toJSONString())
+                .post(URL + "/api/v1.0/reservations");
+        assertEquals(201, resOk.getStatusCode());
     }
 
     @Test
