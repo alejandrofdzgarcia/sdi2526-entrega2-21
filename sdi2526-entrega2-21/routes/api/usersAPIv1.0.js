@@ -55,15 +55,7 @@ module.exports = function (app, usersRepository) {
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required: [dni, password]
-     *             properties:
-     *               dni:
-     *                 type: string
-     *                 example: "12345678Z"
-     *               password:
-     *                 type: string
-     *                 example: "@Dm1n1str@D0r"
+     *             $ref: '#/components/schemas/LoginRequest'
      *     responses:
      *       200:
      *         description: Login correcto, devuelve token JWT
@@ -119,24 +111,7 @@ module.exports = function (app, usersRepository) {
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required: [dni, nombre, apellidos, password, confirmPassword]
-     *             properties:
-     *               dni:
-     *                 type: string
-     *                 example: "87654321A"
-     *               nombre:
-     *                 type: string
-     *                 example: "Juan"
-     *               apellidos:
-     *                 type: string
-     *                 example: "García López"
-     *               password:
-     *                 type: string
-     *                 example: "Segur@Pass1234"
-     *               confirmPassword:
-     *                 type: string
-     *                 example: "Segur@Pass1234"
+     *             $ref: '#/components/schemas/SignupRequest'
      *     responses:
      *       201:
      *         description: Usuario registrado correctamente

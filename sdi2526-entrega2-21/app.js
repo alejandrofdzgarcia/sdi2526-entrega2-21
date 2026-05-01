@@ -8,7 +8,48 @@ var crypto = require('crypto');
 
 var indexRouter = require('./routes/index');
 
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const { User } = require('./schemas/user');
+const { Space } = require('./schemas/space');
+const { Reservation, ReservationRequest } = require('./schemas/reservation');
+const { LoginRequest, SignupRequest } = require('./schemas/auth');
+
 var app = express();
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API de Gestión de Reservas de Espacios',
+            version: '1.0.0',
+            description: 'Documentación interactiva de la API para la gestión de usuarios, espacios y reservas.',
+        },
+        components: {
+            schemas: {
+                User,
+                Space,
+                Reservation,
+                ReservationRequest,
+                LoginRequest,
+                SignupRequest
+            }
+        },
+        servers: [
+            {
+                url: 'http://localhost:8081',
+                description: 'Servidor de pruebas de la aplicación',
+            },
+        ],
+    },
+    apis: [
+        path.join(__dirname, '/routes/api/*.js')
+    ],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ─── View engine ────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));

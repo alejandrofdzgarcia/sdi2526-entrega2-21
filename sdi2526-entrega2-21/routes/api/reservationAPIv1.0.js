@@ -18,26 +18,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *             schema:
      *               type: array
      *               items:
-     *                 type: object
-     *                 properties:
-     *                   id:
-     *                     type: string
-     *                     example: "64f123abc456def789"
-     *                   user:
-     *                     type: string
-     *                     example: "10000001S"
-     *                   space:
-     *                     type: string
-     *                     example: "Sala de reuniones"
-     *                   startDate:
-     *                     type: string
-     *                     example: "01/10/2025, 10:00"
-     *                   endDate:
-     *                     type: string
-     *                     example: "01/10/2025, 12:00"
-     *                   status:
-     *                     type: string
-     *                     example: "ACTIVE"
+     *                 $ref: '#/components/schemas/Reservation'
      *       500:
      *         description: Error interno del servidor
      */
@@ -116,30 +97,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required:
-     *               - spaceId
-     *               - startDate
-     *               - endDate
-     *               - userDni
-     *             properties:
-     *               spaceId:
-     *                 type: string
-     *                 example: "64f123abc456def789"
-     *               startDate:
-     *                 type: string
-     *                 format: date-time
-     *                 example: "2025-10-01T10:00:00Z"
-     *               endDate:
-     *                 type: string
-     *                 format: date-time
-     *                 example: "2025-10-01T12:00:00Z"
-     *               reason:
-     *                 type: string
-     *                 example: "Reunión de equipo"
-     *               userDni:
-     *                 type: string
-     *                 example: "10000001S"
+     *             $ref: '#/components/schemas/ReservationRequest'
      *     responses:
      *       201:
      *         description: Reserva creada correctamente

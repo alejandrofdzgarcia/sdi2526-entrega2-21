@@ -15,20 +15,7 @@ module.exports = function (app, spacesRepository) {
      *             schema:
      *               type: array
      *               items:
-     *                 type: object
-     *                 properties:
-     *                   _id:
-     *                     type: string
-     *                     description: ID del espacio
-     *                     example: "64f123abc456def789"
-     *                   name:
-     *                     type: string
-     *                     description: Nombre del espacio
-     *                     example: "Sala de reuniones"
-     *                   active:
-     *                     type: boolean
-     *                     description: Indica si el espacio está activo
-     *                     example: true
+     *                 $ref: '#/components/schemas/Space'
      *       500:
      *         description: Error al obtener los espacios
      *         content:
