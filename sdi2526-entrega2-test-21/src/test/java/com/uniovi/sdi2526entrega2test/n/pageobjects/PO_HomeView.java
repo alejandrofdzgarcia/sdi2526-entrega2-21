@@ -1,8 +1,9 @@
-package com.uniovi.sdi2425entrega2test.n.pageobjects;
+package com.uniovi.sdi2526entrega2test.n.pageobjects;
 
-import com.uniovi.sdi2425entrega2test.n.util.SeleniumUtils;
+import com.uniovi.sdi2526entrega2test.n.util.SeleniumUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_NavView;
 
 import java.util.List;
 
