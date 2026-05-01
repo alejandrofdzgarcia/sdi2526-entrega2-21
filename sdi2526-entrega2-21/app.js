@@ -8,7 +8,48 @@ var crypto = require('crypto');
 
 var indexRouter = require('./routes/index');
 
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const { User } = require('./schemas/user');
+const { Space } = require('./schemas/space');
+const { Reservation, ReservationRequest } = require('./schemas/reservation');
+const { LoginRequest, SignupRequest } = require('./schemas/auth');
+
 var app = express();
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API de Gestión de Reservas de Espacios',
+            version: '1.0.0',
+            description: 'Documentación interactiva de la API para la gestión de usuarios, espacios y reservas.',
+        },
+        components: {
+            schemas: {
+                User,
+                Space,
+                Reservation,
+                ReservationRequest,
+                LoginRequest,
+                SignupRequest
+            }
+        },
+        servers: [
+            {
+                url: 'http://localhost:8081',
+                description: 'Servidor de pruebas de la aplicación',
+            },
+        ],
+    },
+    apis: [
+        path.join(__dirname, '/routes/api/*.js')
+    ],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ─── View engine ────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
@@ -28,12 +69,12 @@ app.use(session({
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
-app.get('/test/reset', async function(req, res) {
+app.get('/test/reset', async function (req, res) {
     try {
         // Ejecutar el mismo código que tu seed.js
         await resetDatabase(db);
         res.json({ ok: true });
-    } catch(e) {
+    } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
@@ -42,9 +83,9 @@ app.set('crypto', crypto);
 app.set('clave', 'abcdefg');
 
 app.use(function (req, res, next) {
-    res.locals.sessionUser   = req.session.user   || null;
+    res.locals.sessionUser = req.session.user || null;
     res.locals.sessionNombre = req.session.nombre || null;
-    res.locals.sessionRole   = req.session.role   || null;
+    res.locals.sessionRole = req.session.role || null;
     next();
 });
 
@@ -65,10 +106,10 @@ const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
 const dbClient = new MongoClient(url);
 
-const usersRepository        = require('./repositories/usersRepository');
-const spacesRepository       = require('./repositories/spacesRepository');
+const usersRepository = require('./repositories/usersRepository');
+const spacesRepository = require('./repositories/spacesRepository');
 const reservationsRepository = require('./repositories/reservationsRepository');
-const maintenanceRepository  = require('./repositories/maintenanceRepository');
+const maintenanceRepository = require('./repositories/maintenanceRepository');
 
 usersRepository.init(app, dbClient);
 spacesRepository.init(app, dbClient);
@@ -76,14 +117,19 @@ reservationsRepository.init(app, dbClient);
 maintenanceRepository.init(app, dbClient);
 
 const adminSessionRouter = require('./routes/adminSessionRouter');
-const userTokenRouter    = require('./routes/userTokenRouter');
+const userSessionRouter = require('./routes/userSessionRouter');
+const userTokenRouter = require('./routes/userTokenRouter');
 
 app.use('/admin', adminSessionRouter);
+app.use('/spaces', userSessionRouter);
+app.use('/users/change-password', userSessionRouter);
 app.use('/api/v1.0/reservations', userTokenRouter);
+app.use('/', indexRouter);
+
 
 require('./routes/users')(app, usersRepository);
 require('./routes/spaces')(app, spacesRepository, maintenanceRepository, reservationsRepository, usersRepository);
-require('./routes/reservations')(app, reservationsRepository, spacesRepository);
+require('./routes/reservations')(app, reservationsRepository, spacesRepository, usersRepository);
 
 require('./routes/api/usersAPIv1.0')(app, usersRepository);
 require('./routes/api/reservationAPIv1.0')(app, spacesRepository, reservationsRepository, maintenanceRepository);

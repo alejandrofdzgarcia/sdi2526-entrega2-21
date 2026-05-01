@@ -1,7 +1,7 @@
-const {ObjectId} = require("mongodb");
+const { ObjectId } = require("mongodb");
 const spacesRepository = require("../repositories/spacesRepository");
-const {query} = require("express");
-module.exports = function (app, reservationsRepository, spacesRepository) {
+const { query } = require("express");
+module.exports = function (app, reservationsRepository, spacesRepository, usersRepository) {
 
     app.get("/admin/reservations/list", async function (req, res) {
         try {
@@ -18,9 +18,9 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
             let startDate = req.query.startDate || "";
             let endDate = req.query.endDate || "";
             //filtro de espacio
-            if(searchSpace != null && typeof(searchSpace) != "undefined" && searchSpace !== ""){
+            if (searchSpace != null && typeof (searchSpace) != "undefined" && searchSpace !== "") {
                 let spaceID = new ObjectId(searchSpace);
-                filter = {spaceId: spaceID};
+                filter = { spaceId: spaceID };
             }
             // filtro por rango de fechas
             if (startDate || endDate) {
@@ -98,6 +98,76 @@ module.exports = function (app, reservationsRepository, spacesRepository) {
 
         } catch (error) {
             res.send("Se ha producido un error al listar la lista de reservas: " + error);
+        }
+    });
+
+    app.get("/admin/reservations/export", async function (req, res) {
+        try {
+            let filter = {};
+            let options = {};
+
+            let searchSpace = req.query.searchSpace || "";
+            let startDate = req.query.startDate || "";
+            let endDate = req.query.endDate || "";
+
+            if (searchSpace !== "") {
+                filter = { spaceId: new ObjectId(searchSpace) };
+            }
+
+            if (startDate || endDate) {
+                filter.startDate = {};
+                if (startDate) filter.startDate.$gte = new Date(startDate);
+                if (endDate) filter.startDate.$lte = new Date(endDate);
+            }
+
+            let reservations = await reservationsRepository.getReservations(filter, options);
+
+            const formattedReservations = await Promise.all(
+                reservations.map(async (r) => {
+                    const space = await spacesRepository.findSpace({ _id: r.spaceId }, {});
+                    const user = await usersRepository.findUser({ dni: r.userDni }, {});
+
+                    const startDateStr = new Date(r.startDate).toLocaleString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+
+                    const endDateStr = new Date(r.endDate).toLocaleString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+
+                    return {
+                        espacio: space ? space.name : "Desconocido",
+                        nombre: user ? (user.nombre + " " + user.apellidos) : "Desconocido",
+                        dni: r.userDni,
+                        inicio: startDateStr,
+                        fin: endDateStr,
+                        estado: r.status
+                    };
+                })
+            );
+
+            res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
+            res.setHeader('Content-Disposition', 'attachment; filename=reservas.csv');
+
+            let csv = '\ufeff';
+            csv += "Espacio;Nombre;DNI;Inicio;Fin;Estado\n";
+
+            formattedReservations.forEach(r => {
+                csv += `${r.espacio};${r.nombre};${r.dni};${r.inicio};${r.fin};${r.estado}\n`;
+            });
+
+            res.status(200).send(csv);
+
+        } catch (error) {
+            res.send("Error al exportar reservas: " + error);
         }
     });
 }
