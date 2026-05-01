@@ -160,6 +160,45 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         }
     });
 
+    /**
+     * @swagger
+     * /api/v1.0/reservations/{id}:
+     *   put:
+     *     summary: Editar una reserva
+     *     description: Permite editar una reserva si pertenece al usuario.
+     *     tags:
+     *       - Reservations
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: ID de la reserva
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - userDni
+     *             properties:
+     *               userDni:
+     *                 type: string
+     *                 example: "10000001S"
+     *     responses:
+     *       200:
+     *         description: Reserva actualizada correctamente
+     *       400:
+     *         description: Error en la solicitud
+     *       403:
+     *         description: Solo puedes editar tus propias reservas
+     *       404:
+     *         description: Reserva no encontrada
+     *       500:
+     *         description: Error interno del servidor
+     */
     app.put('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
@@ -169,7 +208,6 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 return res.status(400).json({ error: "Falta el DNI del usuario" });
             }
 
-            // 1. Buscar la reserva
             const reservations = await reservationsRepository.getReservations(
                 { _id: new ObjectId(reservationId) }
             );
@@ -178,17 +216,14 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             }
             const reservation = reservations[0];
 
-            // 2. Verificar propiedad
             if (reservation.userDni !== userDni) {
                 return res.status(403).json({ error: "Solo puedes editar tus propias reservas" });
             }
 
-            // 3. No editar si está cancelada
             if (reservation.status === "CANCELADA") {
                 return res.status(400).json({ error: "No se puede editar una reserva cancelada" });
             }
 
-            // 4. Validar fechas
             const start = new Date(startDate);
             const end   = new Date(endDate);
             const now   = new Date();
@@ -196,13 +231,11 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             if (start >= end) return res.status(400).json({ error: "Rango de fechas inválido" });
             if (start < now)  return res.status(400).json({ error: "La reserva no puede ser en el pasado" });
 
-            // 5. Validar espacio
             const targetSpaceId = spaceId ? new ObjectId(spaceId) : reservation.spaceId;
             const space = await spacesRepository.findSpace({ _id: targetSpaceId });
             if (!space)        return res.status(404).json({ error: "Espacio no encontrado" });
             if (!space.active) return res.status(400).json({ error: "El espacio está desactivado" });
 
-            // 6. Comprobar solapamientos (excluyendo esta misma reserva)
             const overlapFilter = {
                 _id: { $ne: new ObjectId(reservationId) },
                 spaceId: targetSpaceId,
@@ -217,7 +250,6 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             const blocks = await maintenanceRepository.getMaintenanceBlocks(overlapFilter);
             if (blocks.length > 0) return res.status(409).json({ error: "Hay un bloqueo de mantenimiento programado" });
 
-            // 7. Actualizar
             const result = await reservationsRepository.updateReservation(
                 { _id: new ObjectId(reservationId) },
                 { spaceId: targetSpaceId, startDate: start, endDate: end, reason: reason || "" }
