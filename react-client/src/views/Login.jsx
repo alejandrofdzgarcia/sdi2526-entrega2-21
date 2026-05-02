@@ -1,19 +1,24 @@
 import { useState } from "react";
 import "../assets/Login.css";
 const Login = ({ onLogin }) => {
-    const [email, setEmail] = useState("");
+    const [dni, setDni] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const handleLogin = () => {
-        fetch("http://localhost:8081/api/v1.0/users/login", {
+        fetch("http://localhost:8081/api/users/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ dni, password })
         })
             .then(res => res.json())
             .then(data => {
+                console.log("dni");
+                console.log(dni);
+                console.log("contraseña");
+                console.log(password);
+                console.log(JSON.stringify({ dni, password }));
                 if (!data.token) {
                     setError("El nombre de usuario o contraseña introducidas no son válidas")
                     throw new Error("Login inválido");
@@ -32,8 +37,8 @@ const Login = ({ onLogin }) => {
             <input
                 type="email"
                 placeholder="email@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={dni}
+                onChange={(e) => setDni(e.target.value)}
             />
             <input
                 type="password"

@@ -8,9 +8,13 @@ function App() {
     !!localStorage.getItem("token")
   );
   return (
-    <>
-      <MainPage />
-    </>
+      <>
+        {!logged ? (
+            <Login onLogin={() => setLogged(true)} />
+        ) : (
+            <MainPage />
+        )}
+      </>
   );
 }
 export default App;

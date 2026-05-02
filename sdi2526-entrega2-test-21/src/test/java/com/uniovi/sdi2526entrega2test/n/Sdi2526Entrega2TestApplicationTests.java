@@ -1043,9 +1043,17 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(false, "PR53 sin hacer");
     }
 
+    /**
+     * [PR54]  Consultar el listado de reservas propias
+     * Se verifica que se muestra la informacion de las reservas
+     * Se verifica que aparece el numero de reservas correcto
+     */
     @Test
     @Order(54)
     public void PR54() {
+        driver.navigate().to("http://localhost:3000/");
+        loginAsAdmin();
+
         Assertions.assertTrue(false, "PR54 sin hacer");
     }
 
