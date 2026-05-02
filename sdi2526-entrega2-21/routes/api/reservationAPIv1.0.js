@@ -1,7 +1,6 @@
 const { ObjectId } = require("mongodb");
 
 module.exports = function (app, spacesRepository, reservationsRepository, maintenanceRepository) {
-    
 
     /**
      * @swagger
@@ -25,7 +24,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
-            let user = req.res.user || "";
+            let user = res.user || "";
 
             if (user === "") {
                 return res.status(500).json({ error: "Error: Usuario no autenticado" });
@@ -39,13 +38,13 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             spaces.forEach(s => { spaceMap[s._id.toString()] = s.name; });
 
             const resultReservations = reservations.map(r => ({
-                _id:       r._id,
-                spaceId:   r.spaceId,
+                _id: r._id,
+                spaceId: r.spaceId,
                 startDateRaw: r.startDate,
-                endDateRaw:   r.endDate,
-                reason:    r.reason || "",
-                userDni:   r.userDni,
-                space:     spaceMap[r.spaceId.toString()] || "Error Espacio",
+                endDateRaw: r.endDate,
+                reason: r.reason || "",
+                userDni: r.userDni,
+                space: spaceMap[r.spaceId.toString()] || "Error Espacio",
                 startDate: new Date(r.startDate).toLocaleString("es-ES", {
                     day: "2-digit", month: "2-digit", year: "numeric",
                     hour: "2-digit", minute: "2-digit"
@@ -93,7 +92,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.post('/api/v1.0/reservations', async (req, res) => {
         try {
             const { spaceId, startDate, endDate, reason } = req.body;
-            const userDni = req.res.user;
+            const userDni = res.user;
 
             if (!spaceId || !startDate || !endDate || !userDni) {
                 const missing = [];
@@ -197,7 +196,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         try {
             const reservationId = req.params.id;
             const { frequency, endRecurrence } = req.body;
-            const userDni = req.res.user;
+            const userDni = res.user;
 
             if (!userDni || !frequency || !endRecurrence) {
                 const missing = [];
@@ -227,9 +226,9 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             }
 
             const baseStart = new Date(base.startDate);
-            const baseEnd   = new Date(base.endDate);
-            const duration  = baseEnd.getTime() - baseStart.getTime();
-            const endLimit  = new Date(endRecurrence);
+            const baseEnd = new Date(base.endDate);
+            const duration = baseEnd.getTime() - baseStart.getTime();
+            const endLimit = new Date(endRecurrence);
 
             if (endLimit <= baseStart) {
                 return res.status(400).json({ error: "La fecha de fin de recurrencia debe ser posterior a la reserva base" });
@@ -240,10 +239,10 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
 
             const advance = (date) => {
                 const d = new Date(date);
-                if (frequency === "diaria")  d.setDate(d.getDate() + 1);
+                if (frequency === "diaria") d.setDate(d.getDate() + 1);
                 if (frequency === "semanal") d.setDate(d.getDate() + 7);
                 if (frequency === "mensual") d.setMonth(d.getMonth() + 1);
-                if (frequency === "anual")   d.setFullYear(d.getFullYear() + 1);
+                if (frequency === "anual") d.setFullYear(d.getFullYear() + 1);
                 return d;
             };
 
@@ -261,9 +260,9 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             for (const occ of occurrences) {
                 const overlapFilter = {
                     spaceId: base.spaceId,
-                    status:  "ACTIVE",
+                    status: "ACTIVE",
                     startDate: { $lt: occ.end },
-                    endDate:   { $gt: occ.start }
+                    endDate: { $gt: occ.start }
                 };
 
                 const otherRes = await reservationsRepository.getReservations(overlapFilter);
@@ -285,26 +284,26 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             const inserted = [];
             for (const occ of occurrences) {
                 const newRes = {
-                    userDni:   base.userDni,
-                    spaceId:   base.spaceId,
+                    userDni: base.userDni,
+                    spaceId: base.spaceId,
                     startDate: occ.start,
-                    endDate:   occ.end,
-                    reason:    base.reason || "",
-                    status:    "ACTIVE",
+                    endDate: occ.end,
+                    reason: base.reason || "",
+                    status: "ACTIVE",
                     createdAt: new Date()
                 };
                 const result = await reservationsRepository.insertReservation(newRes);
                 inserted.push({
-                    id:        result.insertedId,
+                    id: result.insertedId,
                     startDate: occ.start.toLocaleString("es-ES"),
-                    endDate:   occ.end.toLocaleString("es-ES")
+                    endDate: occ.end.toLocaleString("es-ES")
                 });
             }
 
             res.status(201).json({
-                message:   `Se crearon ${inserted.length} reservas recurrentes correctamente`,
+                message: `Se crearon ${inserted.length} reservas recurrentes correctamente`,
                 frequency: frequency,
-                created:   inserted
+                created: inserted
             });
 
         } catch (error) {
@@ -355,7 +354,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
         try {
             const reservationId = req.params.id;
             const { spaceId, startDate, endDate, reason } = req.body;
-            const userDni = req.res.user;
+            const userDni = res.user;
 
             if (!userDni) {
                 return res.status(400).json({ error: "Faltan datos obligatorios: userDni (res.user)" });
@@ -378,15 +377,15 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
             }
 
             const start = new Date(startDate);
-            const end   = new Date(endDate);
-            const now   = new Date();
+            const end = new Date(endDate);
+            const now = new Date();
 
             if (start >= end) return res.status(400).json({ error: "Rango de fechas inválido" });
-            if (start < now)  return res.status(400).json({ error: "La reserva no puede ser en el pasado" });
+            if (start < now) return res.status(400).json({ error: "La reserva no puede ser en el pasado" });
 
             const targetSpaceId = spaceId ? new ObjectId(spaceId) : reservation.spaceId;
             const space = await spacesRepository.findSpace({ _id: targetSpaceId });
-            if (!space)        return res.status(404).json({ error: "Espacio no encontrado" });
+            if (!space) return res.status(404).json({ error: "Espacio no encontrado" });
             if (!space.active) return res.status(400).json({ error: "El espacio está desactivado" });
 
             const overlapFilter = {
@@ -461,7 +460,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.delete('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
-            const  userDni  = req.res.user;
+            const userDni = res.user;
 
             if (!userDni) {
                 return res.status(400).json({ error: "Falta el DNI del usuario para verificar la propiedad" });
