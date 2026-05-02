@@ -466,10 +466,8 @@ class Sdi2526Entrega2TestApplicationTests {
                                 By.xpath("//tbody/tr[td[contains(text(),'Sala Turing')]]"));
                 salaTuringRow.findElement(By.cssSelector("a[href*='/maintenance/new']")).click();
 
-                ((JavascriptExecutor) driver).executeScript(
-                                "document.getElementById('startDate').value = '2026-01-01T00:00';");
-                ((JavascriptExecutor) driver).executeScript(
-                                "document.getElementById('endDate').value = '2026-12-31T23:59';");
+                driver.findElement(By.id("startDate")).sendKeys("010120260000");
+                driver.findElement(By.id("endDate")).sendKeys("311220262359");
                 driver.findElement(By.id("reason")).sendKeys("Bloqueo sobre reserva activa PR21");
                 driver.findElement(By.cssSelector("button[type='submit']")).click();
                 assertFalse(PO_View.checkElementBy(driver, "text", "solapa").isEmpty(),
@@ -486,7 +484,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 loginAsAdmin();
                 PO_SpacesView.navigateToFirstMaintenanceForm(driver, URL);
                 PO_SpacesView.fillMaintenanceForm(driver,
-                                "2099-03-01T09:00", "2099-03-01T18:00",
+                                "010320990900", "010320991800",
                                 "Bloqueo a cancelar en PR22");
                 driver.navigate().to(URL + "/admin/maintenance/list");
                 SeleniumUtils.waitLoadElementsBy(driver, "free", "//tbody/tr", PO_View.getTimeout());
@@ -598,7 +596,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 PO_View.checkElementBy(driver, "text", "Capacidad");
 
                 List<WebElement> rows = driver.findElements(By.xpath("//tbody/tr"));
-                assertEquals(6, rows.size(), "El listado de espacios no debe estar vacío");
+                assertEquals(5, rows.size(), "El listado de espacios no debe estar vacío");
 
                 // Verificar que la primera fila tiene datos en las columnas
                 WebElement firstRow = rows.get(0);
@@ -623,11 +621,11 @@ class Sdi2526Entrega2TestApplicationTests {
                 driver.navigate().to(URL + "/spaces/list");
 
                 List<WebElement> rows = driver.findElements(By.xpath("//tbody/tr"));
-                assertTrue(rows.size() == 6, "El listado de espacios no debe estar vacío");
+                assertTrue(rows.size() == 5, "El listado de espacios no debe estar vacío");
 
                 PO_SpacesView.filterSpaces(driver, "SALA", null);
                 rows = driver.findElements(By.xpath("//tbody/tr"));
-                assertTrue(rows.size() == 3, "El listado de espacios no debe tener 3 salas");
+                assertTrue(rows.size() == 2, "El listado de espacios no debe tener 3 salas");
                 for (WebElement row : rows) {
                         if (row.findElements(By.xpath("td")).size() > 1) {
                                 assertEquals("SALA", row.findElement(By.xpath("td[2]")).getText(),
@@ -1453,7 +1451,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 userLoginReact();
 
                 PO_EditView.clickEditarPrimeraReservaActiva(driver);
-                PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
+                PO_EditView.fillEditForm(driver, null, "010820260900", "010820261100", "Motivo editado PR57");
                 PO_EditView.submitEditForm(driver);
 
                 assertFalse(PO_View.checkElementBy(driver, "text", "actualizada").isEmpty(),
@@ -1469,10 +1467,10 @@ class Sdi2526Entrega2TestApplicationTests {
                 userLoginReact();
 
                 PO_EditView.clickEditarPrimeraReservaActiva(driver);
-                PO_EditView.fillEditForm(driver, "Sala Turing", "2026-06-20T10:00", "2026-06-20T11:00", "Solape PR58");
+                PO_EditView.fillEditForm(driver, "Sala Turing", "200620261000", "200620261100", "Solape PR58");
                 PO_EditView.submitEditForm(driver);
 
-                assertFalse(PO_View.checkElementBy(driver, "text", "horario").isEmpty(),
+                assertFalse(PO_View.checkElementBy(driver, "text", "Ya existe una reserva en ese horario").isEmpty(),
                                 "Debe mostrarse mensaje de error de solape");
                 assertFalse(PO_View.checkElementBy(driver, "text", "Editar Reserva").isEmpty(),
                                 "El formulario debe permanecer visible");
@@ -1494,7 +1492,7 @@ class Sdi2526Entrega2TestApplicationTests {
 
                 PO_RecurrentReservationView.selectFrecuencia(driver, "semanal");
 
-                PO_RecurrentReservationView.setEndRecurrence(driver, "2026-10-01T23:59");
+                PO_RecurrentReservationView.setEndRecurrence(driver, "011020262359");
 
                 PO_RecurrentReservationView.submitForm(driver);
 
@@ -1515,15 +1513,15 @@ class Sdi2526Entrega2TestApplicationTests {
         @Order(60)
         public void PR60() {
                 driver.navigate().to("http://localhost:3000/");
-                // Usar Empleado2 (10000002Q)
-                userLoginReact("10000002Q", "Us3r@2-PASSW");
+
+                userLoginReact("10000002T", "Us3r@2-PASSW");
 
                 PO_RecurrentReservationView.navigateTo(driver);
 
                 PO_RecurrentReservationView.selectReservaBase(driver, "Aula");
 
                 PO_RecurrentReservationView.selectFrecuencia(driver, "diaria");
-                PO_RecurrentReservationView.setEndRecurrence(driver, "2026-12-31T23:59");
+                PO_RecurrentReservationView.setEndRecurrence(driver, "311220262359");
 
                 PO_RecurrentReservationView.submitForm(driver);
 

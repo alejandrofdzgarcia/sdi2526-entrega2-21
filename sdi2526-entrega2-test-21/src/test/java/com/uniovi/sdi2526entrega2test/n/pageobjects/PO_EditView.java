@@ -54,14 +54,12 @@ public class PO_EditView extends PO_NavView {
 
         if (startDate != null) {
             WebElement startInput = driver.findElement(By.cssSelector("input[name='startDate']"));
-            js.executeScript("arguments[0].value = arguments[1];", startInput, startDate);
-            startInput.sendKeys(Keys.TAB);
+            startInput.sendKeys(startDate);
         }
 
         if (endDate != null) {
             WebElement endInput = driver.findElement(By.cssSelector("input[name='endDate']"));
-            js.executeScript("arguments[0].value = arguments[1];", endInput, endDate);
-            endInput.sendKeys(Keys.TAB);
+            endInput.sendKeys(endDate);
         }
 
         if (reason != null) {
