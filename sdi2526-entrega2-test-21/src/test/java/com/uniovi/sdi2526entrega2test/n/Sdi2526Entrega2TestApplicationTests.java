@@ -1387,15 +1387,60 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El formulario debe permanecer visible");
     }
 
+    /**
+     * [PR59] C6 - React: Crear reserva recurrente semanal válida.
+     * Comprobar que se muestran todas las reservas creadas en la tabla.
+     */
     @Test
     @Order(59)
     public void PR59() {
-        Assertions.assertTrue(false, "PR59 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_RecurrentReservationView.navigateTo(driver);
+
+        PO_RecurrentReservationView.selectReservaBase(driver, "Sala");
+
+        PO_RecurrentReservationView.selectFrecuencia(driver, "semanal");
+
+        PO_RecurrentReservationView.setEndRecurrence(driver, "2026-10-01T23:59");
+
+        PO_RecurrentReservationView.submitForm(driver);
+
+        List<WebElement> successMsg = PO_View.checkElementBy(driver, "text", "creadas");
+        Assertions.assertFalse(successMsg.isEmpty(),
+                "Debe mostrarse mensaje de éxito con el número de reservas creadas");
+
+        List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
+        Assertions.assertFalse(rows.isEmpty(),
+                "Debe mostrarse la tabla con las reservas recurrentes creadas");
     }
 
+    /**
+     * [PR60] C6 - React: Crear reserva recurrente con solape → mostrar error, no crear ninguna.
+     */
     @Test
     @Order(60)
     public void PR60() {
-        Assertions.assertTrue(false, "PR60 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000002Q", "Us3r@2-PASSW");
+
+        PO_RecurrentReservationView.navigateTo(driver);
+
+        PO_RecurrentReservationView.selectReservaBase(driver, "Aula");
+
+        PO_RecurrentReservationView.selectFrecuencia(driver, "diaria");
+        PO_RecurrentReservationView.setEndRecurrence(driver, "2026-12-31T23:59");
+
+        PO_RecurrentReservationView.submitForm(driver);
+
+        List<WebElement> errorMsg = PO_View.checkElementBy(driver, "text", "Solape");
+        if (errorMsg.isEmpty()) {
+            errorMsg = PO_View.checkElementBy(driver, "text", "solape");
+        }
+        Assertions.assertFalse(errorMsg.isEmpty(),
+                "Debe mostrarse un mensaje de error indicando el solape");
+
+        List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
+        Assertions.assertTrue(rows.isEmpty(),
+                "No debe mostrarse ninguna reserva creada cuando hay un error de solape");
     }
 }
