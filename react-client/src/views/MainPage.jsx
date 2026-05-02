@@ -5,6 +5,7 @@ import "../assets/MainPage.css"
 import AddReservation from "./AddReservation";
 import UserReservations from "./UserReservations";
 import EditReservation from "./EditReservation";
+import RecurrentReservation from "./RecurrentReservation";
 
 const MainPage = () => {
     const [view, setView] = useState("reservations");
@@ -35,6 +36,7 @@ const MainPage = () => {
                         onDone={handleEditDone}
                     />
                 )}
+                {view === "recurrent" && <RecurrentReservation onDone={() => setView("reservations")} />}
             </main>
             <Footer />
         </div>
