@@ -108,13 +108,11 @@ public class PO_SpacesView extends PO_NavView {
             String reason) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
 
-        js.executeScript(
-                "document.getElementById('startDate').value = arguments[0];",
-                startDate);
+        WebElement startField = driver.findElement(By.id("startDate"));
+        startField.sendKeys(startDate);
 
-        js.executeScript(
-                "document.getElementById('endDate').value = arguments[0];",
-                endDate);
+        WebElement endField = driver.findElement(By.id("endDate"));
+        endField.sendKeys(endDate);
 
         WebElement reasonField = driver.findElement(By.id("reason"));
         reasonField.clear();
