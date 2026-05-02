@@ -938,10 +938,28 @@ class Sdi2425Entrega2TestApplicationTests {
         assertTrue(response.getBody().asString().contains("mantenimiento"));
     }
 
+    /**
+     * [PR42] Consulta el listado de reservas propias
+     * El json recibido como respuesta debe contener 5 elementos
+     */
     @Test
     @Order(43)
     public void PR43() {
-        Assertions.assertTrue(false, "PR43 sin hacer");
+        final String RestAssuredURL = "http://localhost:8081/api/v1.0/reservations";
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        Response response = request.get(RestAssuredURL);
+
+        //se comprueba codigo OK
+        assertEquals(200, response.getStatusCode());
+
+        //se comprueba tamaño de la respuesta
+        assertEquals(5, response.jsonPath().getList("$").size());
+
     }
 
     /**
