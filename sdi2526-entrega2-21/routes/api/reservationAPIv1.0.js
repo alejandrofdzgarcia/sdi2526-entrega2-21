@@ -162,6 +162,146 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
 
     /**
      * @swagger
+     * /api/v1.0/reservations/{id}/recurrent:
+     *   post:
+     *     summary: Crear una reserva recurrente
+     *     description: Permite crear una nueva reserva recurrente si no hay conflictos de horario ni mantenimiento.
+     *     tags:
+     *       - Reservations
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ReservationRequest'
+     *     responses:
+     *       201:
+     *         description: Reserva creada correctamente
+     *       400:
+     *         description: Error en los datos enviados
+     *       404:
+     *         description: Espacio no encontrado
+     *       409:
+     *         description: Conflicto de horario o mantenimiento
+     *       500:
+     *         description: Error interno del servidor
+     */
+    app.post('/api/v1.0/reservations/:id/recurrent', async (req, res) => {
+        try {
+            const reservationId = req.params.id;
+            const { userDni, frequency, endRecurrence } = req.body;
+
+            if (!userDni || !frequency || !endRecurrence) {
+                return res.status(400).json({ error: "Faltan datos obligatorios: userDni, frequency, endRecurrence" });
+            }
+
+            const validFrequencies = ["diaria", "semanal", "mensual", "anual"];
+            if (!validFrequencies.includes(frequency)) {
+                return res.status(400).json({ error: "Frecuencia inválida. Valores permitidos: diaria, semanal, mensual, anual" });
+            }
+
+            const reservations = await reservationsRepository.getReservations({ _id: new ObjectId(reservationId) });
+            if (reservations.length === 0) {
+                return res.status(404).json({ error: "Reserva base no encontrada" });
+            }
+            const base = reservations[0];
+
+            if (base.userDni !== userDni) {
+                return res.status(403).json({ error: "Solo puedes crear recurrentes a partir de tus propias reservas" });
+            }
+
+            if (base.status === "CANCELADA") {
+                return res.status(400).json({ error: "No se puede usar una reserva cancelada como base" });
+            }
+
+            const baseStart = new Date(base.startDate);
+            const baseEnd   = new Date(base.endDate);
+            const duration  = baseEnd.getTime() - baseStart.getTime();
+            const endLimit  = new Date(endRecurrence);
+
+            if (endLimit <= baseStart) {
+                return res.status(400).json({ error: "La fecha de fin de recurrencia debe ser posterior a la reserva base" });
+            }
+
+            const occurrences = [];
+            let currentStart = new Date(baseStart);
+
+            const advance = (date) => {
+                const d = new Date(date);
+                if (frequency === "diaria")  d.setDate(d.getDate() + 1);
+                if (frequency === "semanal") d.setDate(d.getDate() + 7);
+                if (frequency === "mensual") d.setMonth(d.getMonth() + 1);
+                if (frequency === "anual")   d.setFullYear(d.getFullYear() + 1);
+                return d;
+            };
+
+            currentStart = advance(currentStart);
+            while (currentStart <= endLimit) {
+                const currentEnd = new Date(currentStart.getTime() + duration);
+                occurrences.push({ start: new Date(currentStart), end: new Date(currentEnd) });
+                currentStart = advance(currentStart);
+            }
+
+            if (occurrences.length === 0) {
+                return res.status(400).json({ error: "No se generó ninguna ocurrencia con la frecuencia y fecha de fin indicadas" });
+            }
+
+            for (const occ of occurrences) {
+                const overlapFilter = {
+                    spaceId: base.spaceId,
+                    status:  "ACTIVE",
+                    startDate: { $lt: occ.end },
+                    endDate:   { $gt: occ.start }
+                };
+
+                const otherRes = await reservationsRepository.getReservations(overlapFilter);
+                if (otherRes.length > 0) {
+                    return res.status(409).json({
+                        error: `Solape detectado en la ocurrencia del ${occ.start.toLocaleString("es-ES")}. No se creó ninguna reserva.`
+                    });
+                }
+
+                const blocks = await maintenanceRepository.getMaintenanceBlocks(overlapFilter);
+                if (blocks.length > 0) {
+                    return res.status(409).json({
+                        error: `Bloqueo de mantenimiento en la ocurrencia del ${occ.start.toLocaleString("es-ES")}. No se creó ninguna reserva.`
+                    });
+                }
+            }
+
+            // 7. Insertar todas las ocurrencias
+            const inserted = [];
+            for (const occ of occurrences) {
+                const newRes = {
+                    userDni:   base.userDni,
+                    spaceId:   base.spaceId,
+                    startDate: occ.start,
+                    endDate:   occ.end,
+                    reason:    base.reason || "",
+                    status:    "ACTIVE",
+                    createdAt: new Date()
+                };
+                const result = await reservationsRepository.insertReservation(newRes);
+                inserted.push({
+                    id:        result.insertedId,
+                    startDate: occ.start.toLocaleString("es-ES"),
+                    endDate:   occ.end.toLocaleString("es-ES")
+                });
+            }
+
+            res.status(201).json({
+                message:   `Se crearon ${inserted.length} reservas recurrentes correctamente`,
+                frequency: frequency,
+                created:   inserted
+            });
+
+        } catch (error) {
+            res.status(500).json({ error: "Error interno del servidor: " + error.message });
+        }
+    });
+
+    /**
+     * @swagger
      * /api/v1.0/reservations/{id}:
      *   put:
      *     summary: Editar una reserva
