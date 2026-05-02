@@ -1119,14 +1119,12 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(57)
     public void PR57() {
-        // Login con el PO existente
         PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
 
         PO_EditView.clickEditarPrimeraReservaActiva(driver);
         PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
         PO_EditView.submitEditForm(driver);
 
-        // Verificar éxito
         assertFalse(PO_View.checkElementBy(driver, "text", "actualizada").isEmpty(),
                 "Debe mostrarse mensaje de éxito");
 
@@ -1136,7 +1134,16 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(58)
     public void PR58() {
-        Assertions.assertTrue(false, "PR58 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_EditView.clickEditarPrimeraReservaActiva(driver);
+        PO_EditView.fillEditForm(driver, "Aula 1", "2026-05-12T10:30", "2026-05-12T11:30", "Solape PR58");
+        PO_EditView.submitEditForm(driver);
+
+        assertFalse(PO_View.checkElementBy(driver, "text", "horario").isEmpty(),
+                "Debe mostrarse mensaje de error de solape");
+        assertFalse(PO_View.checkElementBy(driver, "text", "Editar Reserva").isEmpty(),
+                "El formulario debe permanecer visible");
     }
 
     @Test
