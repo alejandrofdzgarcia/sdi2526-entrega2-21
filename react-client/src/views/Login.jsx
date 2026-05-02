@@ -14,16 +14,12 @@ const Login = ({ onLogin }) => {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("dni");
-                console.log(dni);
-                console.log("contraseña");
-                console.log(password);
-                console.log(JSON.stringify({ dni, password }));
                 if (!data.token) {
                     setError("El nombre de usuario o contraseña introducidas no son válidas")
                     throw new Error("Login inválido");
                 }
                 localStorage.setItem("token", data.token);
+                localStorage.setItem("userDni", dni);
                 onLogin();
             })
             .catch(() => {

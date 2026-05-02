@@ -1052,7 +1052,7 @@ class Sdi2425Entrega2TestApplicationTests {
     @Order(54)
     public void PR54() {
         driver.navigate().to("http://localhost:3000/");
-        loginAsAdmin();
+
 
         Assertions.assertTrue(false, "PR54 sin hacer");
     }

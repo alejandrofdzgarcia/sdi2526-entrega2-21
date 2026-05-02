@@ -53,7 +53,10 @@ const UserReservations = ({ onEdit }) => {
                     method: "DELETE",
                     headers: {
                         token: localStorage.getItem("token")
-                    }
+                    },
+                    body: JSON.stringify({
+                        userDni: localStorage.getItem("userDni")
+                    })
                 }
             );
 
