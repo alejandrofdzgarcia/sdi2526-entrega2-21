@@ -186,28 +186,60 @@ class Sdi2425Entrega2TestApplicationTests {
         assertFalse(driver.getCurrentUrl().contains("/spaces/list"));
     }
 
+    /**
+     * [PR05] Inicio de sesión con datos válidos (administrador).
+     * Debe redirigir al listado global de reservas.
+     */
     @Test
     @Order(5)
     public void PR05() {
-        Assertions.assertTrue(false, "PR05 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "12345678Z", "@Dm1n1str@D0r");
+        assertTrue(driver.getCurrentUrl().contains("/admin/reservations/list"),
+                "El administrador debe ser redirigido al listado global de reservas");
     }
 
+    /**
+     * [PR06] Inicio de sesión con datos válidos (usuario estándar).
+     * Debe redirigir al listado de espacios disponibles.
+     */
     @Test
     @Order(6)
     public void PR06() {
-        Assertions.assertTrue(false, "PR06 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+        assertTrue(driver.getCurrentUrl().contains("/spaces/list"),
+                "El usuario estándar debe ser redirigido al listado de espacios");
     }
 
+    /**
+     * [PR07] Inicio de sesión con DNI inexistente.
+     * Debe mostrar error y permanecer en la página de login.
+     */
     @Test
     @Order(7)
     public void PR07() {
-        Assertions.assertTrue(false, "PR07 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "99999999Z", "Pass@12345678");
+        List<WebElement> errors = PO_View.checkElementBy(driver, "text", "incorrectos");
+        assertFalse(errors.isEmpty(), "Debe mostrar error de credenciales incorrectas");
+        assertTrue(driver.getCurrentUrl().contains("/users/login"),
+                "Debe permanecer en la página de login");
     }
 
+    /**
+     * [PR08] Inicio de sesión con DNI existente pero contraseña incorrecta.
+     * Debe mostrar error y permanecer en la página de login.
+     */
     @Test
     @Order(8)
     public void PR08() {
-        Assertions.assertTrue(false, "PR08 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "WrongPass@999");
+        List<WebElement> errors = PO_View.checkElementBy(driver, "text", "incorrectos");
+        assertFalse(errors.isEmpty(), "Debe mostrar error de contraseña incorrecta");
+        assertTrue(driver.getCurrentUrl().contains("/users/login"),
+                "Debe permanecer en la página de login");
     }
 
     @Test

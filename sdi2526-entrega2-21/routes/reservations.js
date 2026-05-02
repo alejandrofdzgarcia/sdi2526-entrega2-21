@@ -149,7 +149,7 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
 
                     return {
                         espacio: space ? space.name : "Desconocido",
-                        nombre: user ? (user.nombre + " " + user.apellidos) : "Desconocido",
+                        nombre: user ? (user.name + " " + user.lastname) : "Desconocido",
                         dni: r.userDni,
                         inicio: startDateStr,
                         fin: endDateStr,
