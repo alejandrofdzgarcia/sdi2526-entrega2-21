@@ -53,7 +53,6 @@ const RecurrentReservation = ({ onDone }) => {
                         token: localStorage.getItem("token")
                     },
                     body: JSON.stringify({
-                        userDni:       selected.userDni,
                         frequency:     formData.frequency,
                         endRecurrence: formData.endRecurrence
                     })

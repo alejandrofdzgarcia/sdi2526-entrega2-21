@@ -6,7 +6,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
     spaceId: '',
     startDate: '',
     endDate: '',
-    userDni: localStorage.getItem("userDni") || '',
     reason: ''
   });
 

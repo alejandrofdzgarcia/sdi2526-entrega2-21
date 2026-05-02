@@ -45,10 +45,7 @@ const UserReservations = ({ onEdit }) => {
                 headers: {
                     "Content-Type": "application/json",
                     "token": localStorage.getItem("token")
-                },
-                body: JSON.stringify({
-                    userDni: localStorage.getItem("userDni")
-                })
+                }
             });
 
             if (response.ok) {

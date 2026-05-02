@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 
 module.exports = function (app, spacesRepository, reservationsRepository, maintenanceRepository) {
+    
 
     /**
      * @swagger
@@ -24,7 +25,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
-            let user = res.user || "";
+            let user = req.res.user || "";
 
             if (user === "") {
                 return res.status(500).json({ error: "Error: Usuario no autenticado" });
@@ -91,10 +92,16 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      */
     app.post('/api/v1.0/reservations', async (req, res) => {
         try {
-            const { spaceId, startDate, endDate, reason, userDni } = req.body;
+            const { spaceId, startDate, endDate, reason } = req.body;
+            const userDni = req.res.user;
 
             if (!spaceId || !startDate || !endDate || !userDni) {
-                return res.status(400).json({ error: "Faltan datos obligatorios" });
+                const missing = [];
+                if (!spaceId) missing.push("spaceId");
+                if (!startDate) missing.push("startDate");
+                if (!endDate) missing.push("endDate");
+                if (!userDni) missing.push("userDni (res.user)");
+                return res.status(400).json({ error: "Faltan datos obligatorios: " + missing.join(", ") });
             }
 
             const start = new Date(startDate);
@@ -189,10 +196,15 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.post('/api/v1.0/reservations/:id/recurrent', async (req, res) => {
         try {
             const reservationId = req.params.id;
-            const { userDni, frequency, endRecurrence } = req.body;
+            const { frequency, endRecurrence } = req.body;
+            const userDni = req.res.user;
 
             if (!userDni || !frequency || !endRecurrence) {
-                return res.status(400).json({ error: "Faltan datos obligatorios: userDni, frequency, endRecurrence" });
+                const missing = [];
+                if (!userDni) missing.push("userDni (res.user)");
+                if (!frequency) missing.push("frequency");
+                if (!endRecurrence) missing.push("endRecurrence");
+                return res.status(400).json({ error: "Faltan datos obligatorios: " + missing.join(", ") });
             }
 
             const validFrequencies = ["diaria", "semanal", "mensual", "anual"];
@@ -342,10 +354,11 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.put('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
-            const { userDni, spaceId, startDate, endDate, reason } = req.body;
+            const { spaceId, startDate, endDate, reason } = req.body;
+            const userDni = req.res.user;
 
             if (!userDni) {
-                return res.status(400).json({ error: "Falta el DNI del usuario" });
+                return res.status(400).json({ error: "Faltan datos obligatorios: userDni (res.user)" });
             }
 
             const reservations = await reservationsRepository.getReservations(
@@ -448,7 +461,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.delete('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
-            const  userDni  = res.user;
+            const  userDni  = req.res.user;
 
             if (!userDni) {
                 return res.status(400).json({ error: "Falta el DNI del usuario para verificar la propiedad" });
