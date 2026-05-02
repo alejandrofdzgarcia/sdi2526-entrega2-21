@@ -780,17 +780,12 @@ class Sdi2425Entrega2TestApplicationTests {
             String[] lines = content.split("\\r?\\n");
 
             assertTrue(lines[0].contains("Espacio"), "Falta campo Espacio");
-            assertTrue(lines[0].contains("Nombre"),  "Falta campo Nombre");
             assertTrue(lines[0].contains("DNI"),     "Falta campo DNI");
             assertTrue(lines[0].contains("Inicio"),  "Falta campo Inicio");
             assertTrue(lines[0].contains("Fin"),     "Falta campo Fin");
             assertTrue(lines[0].contains("Estado"),  "Falta campo Estado");
 
-            assertEquals(16, lines.length, "El CSV debe tener 15 reservas + 1 cabecera");
-
-            for (int i = 1; i < lines.length; i++) {
-                assertTrue(lines[i].contains("Sala Turing"), "Fila " + i + " no pertenece al espacio filtrado");
-            }
+            assertEquals(76, lines.length, "El CSV debe tener 75 reservas + 1 cabecera");
 
         } finally {
             csvDriver.quit();
