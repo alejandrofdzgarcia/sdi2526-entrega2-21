@@ -15,6 +15,12 @@ const { User } = require('./schemas/user');
 const { Space } = require('./schemas/space');
 const { Reservation, ReservationRequest, RecurrenceRequest } = require('./schemas/reservation');
 const { LoginRequest, SignupRequest } = require('./schemas/auth');
+const { resetDatabase } = require('./public/javascripts/dbInit');
+
+const { MongoClient } = require("mongodb");
+const url = "mongodb://localhost:27017";
+const dbClient = new MongoClient(url);
+const db = dbClient.db("spaceReservationManagement");
 
 var app = express();
 
@@ -108,9 +114,6 @@ app.use(function (req, res, next) {
     }
 });
 
-const { MongoClient } = require("mongodb");
-const url = "mongodb://localhost:27017";
-const dbClient = new MongoClient(url);
 
 const usersRepository = require('./repositories/usersRepository');
 const spacesRepository = require('./repositories/spacesRepository');
