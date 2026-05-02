@@ -703,28 +703,100 @@ class Sdi2425Entrega2TestApplicationTests {
                 "Debe mostrar eventos de disponibilidad o indicar que el espacio está libre");
     }
 
+    /**
+     * [PR30] Acceso denegado de usuario estándar a recursos de administración.
+     * El adminSessionRouter debe renderizar un error 403.
+     */
     @Test
     @Order(30)
     public void PR30() {
-        Assertions.assertTrue(false, "PR30 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+        driver.navigate().to(URL + "/admin/reservations/list");
+        List<WebElement> errors = PO_View.checkElementBy(driver, "text", "denegado");
+        assertFalse(errors.isEmpty(), "Debe mostrar mensaje de acceso denegado al recurso de administración");
     }
 
+    /**
+     * [PR31] Intento de cancelar reserva ajena (debe fallar con 403).
+     * Usuario A intenta cancelar una reserva que pertenece a Usuario B.
+     */
     @Test
     @Order(31)
     public void PR31() {
-        Assertions.assertTrue(false, "PR31 sin hacer");
+        // Obtener token de usuario B y el ID de una de sus reservas activas
+        String tokenB = getToken("10000002T", "Us3r@2-PASSW");
+        Response listB = RestAssured.given()
+                .header("token", tokenB)
+                .get(URL + "/api/v1.0/reservations");
+        assertEquals(200, listB.getStatusCode());
+
+        List reservationsB = listB.jsonPath().getList("$");
+        assertFalse(reservationsB.isEmpty(), "Usuario B debe tener reservas en el seed");
+
+        String reservationId = null;
+        for (Object obj : reservationsB) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        assertNotNull(reservationId, "Usuario B debe tener al menos una reserva ACTIVE");
+
+        // Usuario A intenta cancelar la reserva de usuario B
+        String tokenA = getToken("10000001S", "Us3r@1-PASSW");
+        Response resp = RestAssured.given()
+                .header("token", tokenA)
+                .delete(URL + "/api/v1.0/reservations/" + reservationId);
+
+        assertEquals(403, resp.getStatusCode(),
+                "Cancelar una reserva ajena debe devolver 403");
+        assertTrue(resp.getBody().asString().contains("propias"),
+                "El mensaje de error debe indicar que solo se pueden cancelar reservas propias");
     }
 
+    /**
+     * [PR32] Modificar la contraseña con datos válidos.
+     * Debe mostrar mensaje de éxito.
+     */
     @Test
     @Order(32)
     public void PR32() {
-        Assertions.assertTrue(false, "PR32 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "10000003U", "Us3r@3-PASSW");
+        driver.navigate().to(URL + "/users/change-password");
+        driver.findElement(By.id("currentPassword")).sendKeys("Us3r@3-PASSW");
+        driver.findElement(By.id("newPassword")).sendKeys("NewPass@12345678");
+        driver.findElement(By.id("confirmNewPassword")).sendKeys("NewPass@12345678");
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        List<WebElement> msg = PO_View.checkElementBy(driver, "text", "modificada");
+        assertFalse(msg.isEmpty(), "Debe mostrar mensaje de contraseña modificada correctamente");
+        assertTrue(driver.getCurrentUrl().contains("/users/change-password"),
+                "Debe permanecer en la página de cambio de contraseña");
     }
 
+    /**
+     * [PR33] Modificar la contraseña con nueva contraseña vacía (datos inválidos).
+     * Debe mostrar error de campo obligatorio.
+     */
     @Test
     @Order(33)
     public void PR33() {
-        Assertions.assertTrue(false, "PR33 sin hacer");
+        driver.navigate().to(URL + "/users/login");
+        PO_LoginView.fillLoginForm(driver, "10000004V", "Us3r@4-PASSW");
+        driver.navigate().to(URL + "/users/change-password");
+        // Eliminar required para poder enviar campos vacíos
+        ((JavascriptExecutor) driver).executeScript(
+                "['currentPassword','newPassword','confirmNewPassword']" +
+                ".forEach(id => { var e=document.getElementById(id); if(e) e.removeAttribute('required'); });");
+        driver.findElement(By.id("currentPassword")).sendKeys("Us3r@4-PASSW");
+        // newPassword y confirmNewPassword se dejan vacíos
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        List<WebElement> msg = PO_View.checkElementBy(driver, "text", "obligatorio");
+        assertFalse(msg.isEmpty(), "Debe mostrar error de campo obligatorio con contraseña vacía");
+        assertTrue(driver.getCurrentUrl().contains("/users/change-password"),
+                "Debe permanecer en la página de cambio de contraseña");
     }
 
     /**
