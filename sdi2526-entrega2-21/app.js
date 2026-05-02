@@ -13,7 +13,7 @@ const swaggerUi = require('swagger-ui-express');
 
 const { User } = require('./schemas/user');
 const { Space } = require('./schemas/space');
-const { Reservation, ReservationRequest } = require('./schemas/reservation');
+const { Reservation, ReservationRequest, RecurrenceRequest } = require('./schemas/reservation');
 const { LoginRequest, SignupRequest } = require('./schemas/auth');
 
 var app = express();
@@ -27,11 +27,20 @@ const swaggerOptions = {
             description: 'Documentación interactiva de la API para la gestión de usuarios, espacios y reservas.',
         },
         components: {
+            securitySchemes: {
+                tokenAuth: {
+                    type: 'apiKey',
+                    in: 'header',
+                    name: 'token',
+                    description: 'Token JWT para autenticación en la API'
+                }
+            },
             schemas: {
                 User,
                 Space,
                 Reservation,
                 ReservationRequest,
+                RecurrenceRequest,
                 LoginRequest,
                 SignupRequest
             }
@@ -51,11 +60,9 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// ─── View engine ────────────────────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'twig');
 
-// ─── Middleware básico ───────────────────────────────────────────────────────
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -71,7 +78,6 @@ app.use(session({
 
 app.get('/test/reset', async function (req, res) {
     try {
-        // Ejecutar el mismo código que tu seed.js
         await resetDatabase(db);
         res.json({ ok: true });
     } catch (e) {

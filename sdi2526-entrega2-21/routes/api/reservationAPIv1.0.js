@@ -10,6 +10,8 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     description: Devuelve todas las reservas asociadas al usuario logeado con formato de fecha legible.
      *     tags:
      *       - Reservations
+     *     security:
+     *       - tokenAuth: []
      *     responses:
      *       200:
      *         description: Lista de reservas del usuario
@@ -71,6 +73,8 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     description: Permite registrar una nueva reserva si no hay conflictos de horario ni mantenimiento.
      *     tags:
      *       - Reservations
+     *     security:
+     *       - tokenAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -174,15 +178,24 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     description: Permite crear una nueva reserva recurrente si no hay conflictos de horario ni mantenimiento.
      *     tags:
      *       - Reservations
+     *     security:
+     *       - tokenAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: ID de la reserva base
      *     requestBody:
      *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/ReservationRequest'
+     *             $ref: '#/components/schemas/RecurrenceRequest'
      *     responses:
      *       201:
-     *         description: Reserva creada correctamente
+     *         description: Reservas recurrentes creadas correctamente
      *       400:
      *         description: Error en los datos enviados
      *       404:
@@ -319,6 +332,8 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     description: Permite editar una reserva si pertenece al usuario.
      *     tags:
      *       - Reservations
+     *     security:
+     *       - tokenAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -331,13 +346,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required:
-     *               - userDni
-     *             properties:
-     *               userDni:
-     *                 type: string
-     *                 example: "10000001S"
+     *             $ref: '#/components/schemas/ReservationRequest'
      *     responses:
      *       200:
      *         description: Reserva actualizada correctamente
@@ -347,6 +356,8 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *         description: Solo puedes editar tus propias reservas
      *       404:
      *         description: Reserva no encontrada
+     *       409:
+     *         description: Conflicto de horario o mantenimiento
      *       500:
      *         description: Error interno del servidor
      */
@@ -426,6 +437,8 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     description: Permite cancelar una reserva si pertenece al usuario.
      *     tags:
      *       - Reservations
+     *     security:
+     *       - tokenAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -433,23 +446,11 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *         schema:
      *           type: string
      *         description: ID de la reserva
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             required:
-     *               - userDni
-     *             properties:
-     *               userDni:
-     *                 type: string
-     *                 example: "10000001S"
      *     responses:
      *       200:
      *         description: Reserva cancelada correctamente
      *       400:
-     *         description: Error en la solicitud
+     *         description: Error en la solicitud (ej. ya cancelada)
      *       403:
      *         description: No autorizado para cancelar esta reserva
      *       404:
