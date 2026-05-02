@@ -110,14 +110,28 @@ class Sdi2526Entrega2TestApplicationTests {
         }
 
         private static void userLoginReact() {
+                userLoginReact("10000001S", "Us3r@1-PASSW");
+        }
+
+        private static void userLoginReact(String userDni, String userPassword) {
+                // Si ya estamos logueados (no vemos el campo DNI pero sí el de Cerrar Sesión),
+                // cerramos sesión para asegurar un estado limpio.
+                List<WebElement> loginInput = driver.findElements(By.xpath("//*[@id=\"root\"]/div/input[1]"));
+                if (loginInput.isEmpty()) {
+                        List<WebElement> logoutButtons = driver.findElements(By.xpath("//button[contains(text(), 'Cerrar Sesión')]"));
+                        if (!logoutButtons.isEmpty()) {
+                                logoutButtons.get(0).click();
+                        }
+                }
+
                 WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
                 dni.click();
                 dni.clear();
-                dni.sendKeys("10000001S");
+                dni.sendKeys(userDni);
                 WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
                 password.click();
                 password.clear();
-                password.sendKeys("Us3r@1-PASSW");
+                password.sendKeys(userPassword);
                 driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
         }
 
@@ -1508,11 +1522,7 @@ class Sdi2526Entrega2TestApplicationTests {
         public void PR60() {
                 driver.navigate().to("http://localhost:3000/");
                 // Usar Empleado2 (10000002Q)
-                WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
-                dni.sendKeys("10000002Q");
-                WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
-                password.sendKeys("Us3r@2-PASSW");
-                driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
+                userLoginReact("10000002Q", "Us3r@2-PASSW");
 
                 PO_RecurrentReservationView.navigateTo(driver);
 
