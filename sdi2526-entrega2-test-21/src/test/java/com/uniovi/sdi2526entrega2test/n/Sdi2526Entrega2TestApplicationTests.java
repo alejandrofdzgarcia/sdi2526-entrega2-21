@@ -493,7 +493,7 @@ class Sdi2526Entrega2TestApplicationTests {
 
         driver.navigate().to(URL + "/admin/reservations/list");
 
-        //PO_View.checkElementBy(driver, "text", "Usuario");
+        // PO_View.checkElementBy(driver, "text", "Usuario");
         PO_View.checkElementBy(driver, "text", "Espacio");
         PO_View.checkElementBy(driver, "text", "Inicio");
         PO_View.checkElementBy(driver, "text", "Fin");
@@ -501,12 +501,12 @@ class Sdi2526Entrega2TestApplicationTests {
 
         List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
-        //probar paginación
+        // probar paginación
         PO_PrivateView.checkPagination(driver);
         rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
-        //Assertions.assertTrue(false, "PR23 sin hacer");
+        // Assertions.assertTrue(false, "PR23 sin hacer");
     }
 
     /**
@@ -525,11 +525,12 @@ class Sdi2526Entrega2TestApplicationTests {
         PO_PrivateView.checkPagination(driver);
         assertTrue(driver.getCurrentUrl().contains("searchSpace="), "La URL debe contener el filtro por espacio");
         PO_PrivateView.checkPagination(driver);
-        assertTrue(driver.getCurrentUrl().contains("searchSpace="), "El filtro de espacio debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("searchSpace="),
+                "El filtro de espacio debe mantenerse al cambiar de página");
         List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
 
-        //assertTrue(false, "PR24 sin hacer");
+        // assertTrue(false, "PR24 sin hacer");
     }
 
     /**
@@ -552,11 +553,13 @@ class Sdi2526Entrega2TestApplicationTests {
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         PO_PrivateView.checkPagination(driver);
-        assertTrue(driver.getCurrentUrl().contains("startDate=2026-06-01"), "El filtro de fecha debe mantenerse al cambiar de página");
-        assertTrue(driver.getCurrentUrl().contains("endDate=2026-06-30"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-06-01"),
+                "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-06-30"),
+                "El filtro de fecha debe mantenerse al cambiar de página");
         rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
-        //Assertions.assertTrue(false, "PR25 sin hacer");
+        // Assertions.assertTrue(false, "PR25 sin hacer");
     }
 
     /**
@@ -641,7 +644,7 @@ class Sdi2526Entrega2TestApplicationTests {
         result = PO_View.checkElementBy(driver, "text", checkText);
         Assertions.assertEquals(checkText, result.get(0).getText());
 
-        //assertTrue(false, "PR28 sin hacer");
+        // assertTrue(false, "PR28 sin hacer");
     }
 
     /**
@@ -728,8 +731,10 @@ class Sdi2526Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR35] El usuario administrador dispondrá de una acción para exportar a CSV el listado global de
-     * reservas (o el resultado de un filtro). El CSV deberá incluir, al menos: espacio, usuario, inicio, fin
+     * [PR35] El usuario administrador dispondrá de una acción para exportar a CSV
+     * el listado global de
+     * reservas (o el resultado de un filtro). El CSV deberá incluir, al menos:
+     * espacio, usuario, inicio, fin
      * y estado.
      */
     @Test
@@ -753,7 +758,8 @@ class Sdi2526Entrega2TestApplicationTests {
             csvDriver.navigate().to(URL + "/admin/reservations/list");
 
             String spaceId = getSpaceIdByName("Sala Turing");
-            new org.openqa.selenium.support.ui.Select(csvDriver.findElement(By.id("searchSpace"))).selectByValue(spaceId);
+            new org.openqa.selenium.support.ui.Select(csvDriver.findElement(By.id("searchSpace")))
+                    .selectByValue(spaceId);
 
             SeleniumUtils.waitLoadElementsBy(csvDriver, "free", "//tbody/tr", PO_View.getTimeout());
 
@@ -780,10 +786,10 @@ class Sdi2526Entrega2TestApplicationTests {
             String[] lines = content.split("\\r?\\n");
 
             assertTrue(lines[0].contains("Espacio"), "Falta campo Espacio");
-            assertTrue(lines[0].contains("DNI"),     "Falta campo DNI");
-            assertTrue(lines[0].contains("Inicio"),  "Falta campo Inicio");
-            assertTrue(lines[0].contains("Fin"),     "Falta campo Fin");
-            assertTrue(lines[0].contains("Estado"),  "Falta campo Estado");
+            assertTrue(lines[0].contains("DNI"), "Falta campo DNI");
+            assertTrue(lines[0].contains("Inicio"), "Falta campo Inicio");
+            assertTrue(lines[0].contains("Fin"), "Falta campo Fin");
+            assertTrue(lines[0].contains("Estado"), "Falta campo Estado");
 
             assertEquals(76, lines.length, "El CSV debe tener 75 reservas + 1 cabecera");
 
@@ -830,7 +836,8 @@ class Sdi2526Entrega2TestApplicationTests {
      * [PR39] Registrar una reserva válida (usuario estándar).
      * Debe devolver 201 Created.
      */
-    @Test @Order(39)
+    @Test
+    @Order(39)
     void PR39() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
         String spaceId = getSpaceIdByName("Sala Turing");
@@ -856,7 +863,8 @@ class Sdi2526Entrega2TestApplicationTests {
      * [PR40] Registrar una reserva inválida (inicio posterior al fin).
      * Debe devolver 400 Bad Request.
      */
-    @Test @Order(40)
+    @Test
+    @Order(40)
     void PR40() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
         String spaceId = getSpaceIdByName("Sala Turing");
@@ -868,7 +876,7 @@ class Sdi2526Entrega2TestApplicationTests {
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
         params.put("startDate", "2026-06-02T12:00:00"); // Inicio después
-        params.put("endDate", "2026-06-02T10:00:00");   // de fin
+        params.put("endDate", "2026-06-02T10:00:00"); // de fin
         params.put("userDni", "10000001S");
 
         request.body(params.toJSONString());
@@ -881,7 +889,8 @@ class Sdi2526Entrega2TestApplicationTests {
      * El seed tiene una reserva en "Sala Turing" el 2026-06-15 de 09:00 a 11:00.
      * Debe devolver 409 Conflict.
      */
-    @Test @Order(41)
+    @Test
+    @Order(41)
     void PR41() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
         String spaceId = getSpaceIdByName("Sala Turing");
@@ -906,7 +915,8 @@ class Sdi2526Entrega2TestApplicationTests {
      * [PR42] Intentar reservar dentro de un bloqueo (debe fallar).
      * El seed tiene un bloqueo en "Sala Turing" para mañana (+24h).
      */
-    @Test @Order(42)
+    @Test
+    @Order(42)
     void PR42() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
         String spaceId = getSpaceIdByName("Sala Turing");
@@ -923,7 +933,7 @@ class Sdi2526Entrega2TestApplicationTests {
 
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
-        params.put("startDate", tomorrow); 
+        params.put("startDate", tomorrow);
         params.put("endDate", sdf.format(new java.util.Date(cal.getTimeInMillis() + 3600000)));
         params.put("userDni", "10000001S");
 
@@ -949,10 +959,10 @@ class Sdi2526Entrega2TestApplicationTests {
 
         Response response = request.get(RestAssuredURL);
 
-        //se comprueba codigo OK
+        // se comprueba codigo OK
         assertEquals(200, response.getStatusCode());
 
-        //se comprueba tamaño de la respuesta
+        // se comprueba tamaño de la respuesta
         assertEquals(5, response.jsonPath().getList("$").size());
 
     }
@@ -968,7 +978,8 @@ class Sdi2526Entrega2TestApplicationTests {
      * [PR44] Cancelar una reserva propia y verificar que deja de ocupar espacio.
      * Utiliza una reserva de la semilla (Sala Turing, 15 de Junio).
      */
-    @Test @Order(44)
+    @Test
+    @Order(44)
     void PR44() {
         String token = getToken("10000001S", "Us3r@1-PASSW");
         String spaceId = getSpaceIdByName("Sala Turing");
@@ -978,10 +989,12 @@ class Sdi2526Entrega2TestApplicationTests {
         Response resList = RestAssured.given()
                 .header("token", token)
                 .get(URL + "/api/v1.0/reservations");
-        
+
         // Buscamos el ID de la reserva en Sala Turing que empieza a las 09:00
-        // (La fecha viene formateada como "15/01/2026, 09:00" segun el locale es-ES en el server)
-        String resId = resList.jsonPath().getString("find { it.space == 'Sala Turing' && it.startDate.contains('09:00') }.id");
+        // (La fecha viene formateada como "15/01/2026, 09:00" segun el locale es-ES en
+        // el server)
+        String resId = resList.jsonPath()
+                .getString("find { it.space == 'Sala Turing' && it.startDate.contains('09:00') }.id");
         assertNotNull(resId, "Debe existir la reserva de la semilla");
 
         // 2. Verificar que bloquea un solape (10:00-12:00)
@@ -1057,8 +1070,8 @@ class Sdi2526Entrega2TestApplicationTests {
         JSONObject editBody = new JSONObject();
         editBody.put("userDni", "10000001S");
         editBody.put("startDate", "2026-07-01T09:00:00");
-        editBody.put("endDate",   "2026-07-01T11:00:00");
-        editBody.put("reason",    "Motivo editado PR45");
+        editBody.put("endDate", "2026-07-01T11:00:00");
+        editBody.put("reason", "Motivo editado PR45");
 
         Response editResp = RestAssured.given()
                 .header("Content-Type", "application/json")
@@ -1086,7 +1099,8 @@ class Sdi2526Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR46] S5 - API: Editar una reserva con solape: debe devolver 409 y NO modificar.
+     * [PR46] S5 - API: Editar una reserva con solape: debe devolver 409 y NO
+     * modificar.
      */
     @Test
     @Order(46)
@@ -1136,11 +1150,11 @@ class Sdi2526Entrega2TestApplicationTests {
         Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Aula 1' en el seed");
 
         JSONObject editBody = new JSONObject();
-        editBody.put("userDni",    "10000001S");
-        editBody.put("spaceId",    aulaUnoId);
-        editBody.put("startDate",  "2026-05-12T10:30:00");
-        editBody.put("endDate",    "2026-05-12T11:30:00");
-        editBody.put("reason",     "Intento solape PR46");
+        editBody.put("userDni", "10000001S");
+        editBody.put("spaceId", aulaUnoId);
+        editBody.put("startDate", "2026-05-12T10:30:00");
+        editBody.put("endDate", "2026-05-12T11:30:00");
+        editBody.put("reason", "Intento solape PR46");
 
         Response editResp = RestAssured.given()
                 .header("Content-Type", "application/json")
@@ -1194,8 +1208,8 @@ class Sdi2526Entrega2TestApplicationTests {
         Assertions.assertNotNull(reservationId, "Debe haber al menos una reserva ACTIVE en el seed");
 
         JSONObject body = new JSONObject();
-        body.put("userDni",       "10000001S");
-        body.put("frequency",     "semanal");
+        body.put("userDni", "10000001S");
+        body.put("frequency", "semanal");
         body.put("endRecurrence", "2026-09-30T23:59:00");
 
         Response resp = RestAssured.given()
@@ -1219,7 +1233,8 @@ class Sdi2526Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR48] S6 - API: Crear reserva recurrente con solape → rechazar y no crear ninguna.
+     * [PR48] S6 - API: Crear reserva recurrente con solape → rechazar y no crear
+     * ninguna.
      */
     @Test
     @Order(48)
@@ -1257,8 +1272,8 @@ class Sdi2526Entrega2TestApplicationTests {
         Assertions.assertNotNull(reservationId);
 
         JSONObject body = new JSONObject();
-        body.put("userDni",       "10000002Q");
-        body.put("frequency",     "diaria");
+        body.put("userDni", "10000002Q");
+        body.put("frequency", "diaria");
         body.put("endRecurrence", "2026-12-31T23:59:00");
 
         Response resp = RestAssured.given()
@@ -1277,42 +1292,19 @@ class Sdi2526Entrega2TestApplicationTests {
     @Test
     @Order(49)
     public void PR49() {
-        driver.navigate().to("http://localhost:3000/");
-        userLoginReact();
-        // Verificar que estamos dentro (aparece el título Mis Reservas)
-        assertFalse(PO_View.checkElementBy(driver, "text", "Mis Reservas").isEmpty(),
-                "Tras login exitoso debe mostrarse el listado de reservas");
+        Assertions.assertTrue(false, "PR49 sin hacer");
     }
 
     @Test
     @Order(50)
     public void PR50() {
-        driver.navigate().to("http://localhost:3000/");
-        // Login con datos inválidos
-        WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
-        dni.sendKeys("99999999Z");
-        WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
-        password.sendKeys("wrongpass");
-        driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
-
-        // Verificar mensaje de error
-        assertFalse(PO_View.checkElementBy(driver, "text", "no son válidas").isEmpty(),
-                "Debe mostrarse mensaje de error ante credenciales inválidas");
+        Assertions.assertTrue(false, "PR50 sin hacer");
     }
 
     @Test
     @Order(51)
     public void PR51() {
-        driver.navigate().to("http://localhost:3000/");
-        userLoginReact();
-        PO_View.checkElementBy(driver, "text", "Mis Reservas");
-
-        // Cerrar sesión
-        driver.findElement(By.className("logout-btn")).click();
-
-        // Verificar que volvemos al login (aparece el título Iniciar Sesión)
-        assertFalse(PO_View.checkElementBy(driver, "text", "Iniciar Sesión").isEmpty(),
-                "Tras logout debe mostrarse el formulario de inicio de sesión");
+        Assertions.assertTrue(false, "PR51 sin hacer");
     }
 
     @Test
@@ -1354,7 +1346,8 @@ class Sdi2526Entrega2TestApplicationTests {
         driver.findElement(By.xpath("//button[contains(text(), 'Nueva Reserva')]")).click();
 
         // Rellenar formulario con fecha inicio > fin
-        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("spaceId"))).selectByVisibleText("Sala Turing (Planta 1)");
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("spaceId")))
+                .selectByVisibleText("Sala Turing (Planta 1)");
         driver.findElement(By.id("startDate")).sendKeys("2026-11-20T12:00");
         driver.findElement(By.id("endDate")).sendKeys("2026-11-20T10:00");
         driver.findElement(By.id("reason")).sendKeys("Reserva inválida PR53");
@@ -1367,7 +1360,7 @@ class Sdi2526Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR54]  Consultar el listado de reservas propias
+     * [PR54] Consultar el listado de reservas propias
      * Se verifica que se muestra la informacion de las reservas
      * Se verifica que aparece el numero de reservas correcto
      */
@@ -1376,7 +1369,7 @@ class Sdi2526Entrega2TestApplicationTests {
     public void PR54() {
         driver.navigate().to("http://localhost:3000/");
 
-        //login react
+        // login react
         userLoginReact();
 
         PO_View.checkElementBy(driver, "text", "Espacio");
@@ -1386,11 +1379,11 @@ class Sdi2526Entrega2TestApplicationTests {
         List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
-        //Assertions.assertTrue(false, "PR54 sin hacer");
+        // Assertions.assertTrue(false, "PR54 sin hacer");
     }
 
     /**
-     * [PR55]  Filtrar reservas propias por estado CANCELADA
+     * [PR55] Filtrar reservas propias por estado CANCELADA
      * Se verifica que aparece el numero de reservas correcto
      */
     @Test
@@ -1398,10 +1391,10 @@ class Sdi2526Entrega2TestApplicationTests {
     public void PR55() {
         driver.navigate().to("http://localhost:3000/");
 
-        //login react
+        // login react
         userLoginReact();
 
-        //se filtra por reservas canceladas
+        // se filtra por reservas canceladas
         driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
 
         List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
@@ -1424,14 +1417,18 @@ class Sdi2526Entrega2TestApplicationTests {
                 .count();
 
         // Cancelar la primera reserva activa
-        WebElement firstActiveCancelBtn = driver.findElement(By.xpath("//tr[td[span[contains(text(), 'ACTIVE')]]]//button[contains(text(), 'Cancelar')]"));
+        WebElement firstActiveCancelBtn = driver.findElement(
+                By.xpath("//tr[td[span[contains(text(), 'ACTIVE')]]]//button[contains(text(), 'Cancelar')]"));
         firstActiveCancelBtn.click();
 
         // Aceptar confirmación
         driver.switchTo().alert().accept();
 
         // Esperar a que se actualice (vuelve a cargar la lista)
-        try { Thread.sleep(1000); } catch (InterruptedException e) {}
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
 
         // Verificar que hay una reserva activa menos
         List<WebElement> rowsAfter = driver.findElements(By.xpath("//tbody/tr"));
@@ -1504,7 +1501,8 @@ class Sdi2526Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR60] C6 - React: Crear reserva recurrente con solape → mostrar error, no crear ninguna.
+     * [PR60] C6 - React: Crear reserva recurrente con solape → mostrar error, no
+     * crear ninguna.
      */
     @Test
     @Order(60)
