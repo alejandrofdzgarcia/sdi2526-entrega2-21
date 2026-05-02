@@ -1,9 +1,6 @@
 package com.uniovi.sdi2526entrega2test.n;
 
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_LoginView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SignUpView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SpacesView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_View;
+import com.uniovi.sdi2526entrega2test.n.pageobjects.*;
 import com.uniovi.sdi2526entrega2test.n.util.SeleniumUtils;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -473,22 +470,81 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El bloqueo debe aparecer con estado CANCELADO tras cancelarlo");
     }
 
+    /**
+     * [PR23] Consultar listado global de reservas
+     * Se prueba la pagionación
+     */
     @Test
     @Order(23)
     public void PR23() {
-        Assertions.assertTrue(false, "PR23 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+
+        //PO_View.checkElementBy(driver, "text", "Usuario");
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+        PO_View.checkElementBy(driver, "text", "Estado");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+        //probar paginación
+        PO_PrivateView.checkPagination(driver);
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //Assertions.assertTrue(false, "PR23 sin hacer");
     }
 
+    /**
+     * [PR24] Filtrar listado global de reservas por espacio
+     * Se prueba la pagionación
+     */
     @Test
     @Order(24)
     public void PR24() {
-        Assertions.assertTrue(false, "PR24 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+
+        driver.findElement(By.xpath("//*[@id=\"searchSpace\"]/option[2]")).click();
+
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("searchSpace="), "La URL debe contener el filtro por espacio");
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("searchSpace="), "El filtro de espacio debe mantenerse al cambiar de página");
+        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //assertTrue(false, "PR24 sin hacer");
     }
 
+    /**
+     * [PR25] Filtrar listado global de reservas por rango de fechas
+     * Se prueba la pagionación
+     */
     @Test
     @Order(25)
     public void PR25() {
-        Assertions.assertTrue(false, "PR25 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+        driver.findElement(By.id("startDate")).sendKeys("2026-05-01");
+        driver.findElement(By.id("endDate")).sendKeys("2026-05-05");
+        driver.findElement(By.xpath("//button[@type='submit']")).click();
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "La URL debe contener la fecha de inicio");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "La URL debe contener la fecha de fin");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "El filtro de fecha debe mantenerse al cambiar de página");
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+        //Assertions.assertTrue(false, "PR25 sin hacer");
     }
 
     /**
@@ -552,10 +608,28 @@ class Sdi2425Entrega2TestApplicationTests {
         PO_LoginView.logout(driver);
     }
 
+    /**
+     * [PR28] Acceder al detalle de un espacio desde el listado
+     * Se verifica que se muestra la información del espacio
+     */
     @Test
     @Order(28)
     public void PR28() {
-        Assertions.assertTrue(false, "PR28 sin hacer");
+        loginAsUser();
+
+        driver.navigate().to(URL + "/spaces/list");
+
+        driver.findElement(By.xpath("/html/body/div/div/div[2]/table/tbody/tr[1]/td[6]/a")).click();
+
+        String checkText = "Aula Newton";
+        List<WebElement> result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.get(0).getText());
+
+        checkText = "AULA";
+        result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.get(0).getText());
+
+        //assertTrue(false, "PR28 sin hacer");
     }
 
     /**
