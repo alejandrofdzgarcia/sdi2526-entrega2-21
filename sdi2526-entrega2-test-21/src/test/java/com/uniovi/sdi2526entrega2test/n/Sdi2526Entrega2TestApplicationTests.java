@@ -1123,7 +1123,7 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR46] S5 - API: Editar una reserva con solape → debe devolver 409 y NO modificar.
+     * [PR46] S5 - API: Editar una reserva con solape: debe devolver 409 y NO modificar.
      */
     @Test
     @Order(46)
@@ -1191,16 +1191,124 @@ class Sdi2425Entrega2TestApplicationTests {
                 "Debe incluir mensaje de error");
     }
 
+    /**
+     * [PR47] S6 - API: Crear reserva recurrente semanal válida (sin solapes).
+     * Comprobar que el servicio devuelve todas las reservas previstas (HTTP 201).
+     */
     @Test
     @Order(47)
     public void PR47() {
-        Assertions.assertTrue(false, "PR47 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode());
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId, "Debe haber al menos una reserva ACTIVE en el seed");
+
+        JSONObject body = new JSONObject();
+        body.put("userDni",       "10000001S");
+        body.put("frequency",     "semanal");
+        body.put("endRecurrence", "2026-09-30T23:59:00");
+
+        Response resp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(body.toJSONString())
+                .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
+
+        Assertions.assertEquals(201, resp.getStatusCode(),
+                "Reservas recurrentes válidas deben devolver 201");
+
+        List created = resp.jsonPath().getList("created");
+        Assertions.assertNotNull(created, "La respuesta debe incluir el array 'created'");
+        Assertions.assertFalse(created.isEmpty(),
+                "Debe haberse creado al menos una reserva recurrente");
+
+        String message = resp.jsonPath().getString("message");
+        Assertions.assertNotNull(message);
+        Assertions.assertTrue(message.contains("creadas") || message.contains("recurrentes"),
+                "El mensaje debe indicar que se crearon reservas recurrentes");
     }
 
+    /**
+     * [PR48] S6 - API: Crear reserva recurrente con solape → rechazar y no crear ninguna.
+     */
     @Test
     @Order(48)
     public void PR48() {
-        Assertions.assertTrue(false, "PR48 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000002Q");
+        loginBody.put("password", "Us3r@2-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode());
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId);
+
+        JSONObject body = new JSONObject();
+        body.put("userDni",       "10000002Q");
+        body.put("frequency",     "diaria");
+        body.put("endRecurrence", "2026-12-31T23:59:00");
+
+        Response resp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(body.toJSONString())
+                .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
+
+        Assertions.assertEquals(409, resp.getStatusCode(),
+                "Un solape debe devolver 409 y no crear ninguna reserva");
+
+        String error = resp.jsonPath().getString("error");
+        Assertions.assertNotNull(error, "Debe incluir mensaje de error explicando el solape");
     }
 
     @Test
@@ -1311,15 +1419,60 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El formulario debe permanecer visible");
     }
 
+    /**
+     * [PR59] C6 - React: Crear reserva recurrente semanal válida.
+     * Comprobar que se muestran todas las reservas creadas en la tabla.
+     */
     @Test
     @Order(59)
     public void PR59() {
-        Assertions.assertTrue(false, "PR59 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_RecurrentReservationView.navigateTo(driver);
+
+        PO_RecurrentReservationView.selectReservaBase(driver, "Sala");
+
+        PO_RecurrentReservationView.selectFrecuencia(driver, "semanal");
+
+        PO_RecurrentReservationView.setEndRecurrence(driver, "2026-10-01T23:59");
+
+        PO_RecurrentReservationView.submitForm(driver);
+
+        List<WebElement> successMsg = PO_View.checkElementBy(driver, "text", "creadas");
+        Assertions.assertFalse(successMsg.isEmpty(),
+                "Debe mostrarse mensaje de éxito con el número de reservas creadas");
+
+        List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
+        Assertions.assertFalse(rows.isEmpty(),
+                "Debe mostrarse la tabla con las reservas recurrentes creadas");
     }
 
+    /**
+     * [PR60] C6 - React: Crear reserva recurrente con solape → mostrar error, no crear ninguna.
+     */
     @Test
     @Order(60)
     public void PR60() {
-        Assertions.assertTrue(false, "PR60 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000002Q", "Us3r@2-PASSW");
+
+        PO_RecurrentReservationView.navigateTo(driver);
+
+        PO_RecurrentReservationView.selectReservaBase(driver, "Aula");
+
+        PO_RecurrentReservationView.selectFrecuencia(driver, "diaria");
+        PO_RecurrentReservationView.setEndRecurrence(driver, "2026-12-31T23:59");
+
+        PO_RecurrentReservationView.submitForm(driver);
+
+        List<WebElement> errorMsg = PO_View.checkElementBy(driver, "text", "Solape");
+        if (errorMsg.isEmpty()) {
+            errorMsg = PO_View.checkElementBy(driver, "text", "solape");
+        }
+        Assertions.assertFalse(errorMsg.isEmpty(),
+                "Debe mostrarse un mensaje de error indicando el solape");
+
+        List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
+        Assertions.assertTrue(rows.isEmpty(),
+                "No debe mostrarse ninguna reserva creada cuando hay un error de solape");
     }
 }
