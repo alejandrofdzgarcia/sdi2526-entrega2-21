@@ -109,6 +109,18 @@ class Sdi2425Entrega2TestApplicationTests {
         PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
     }
 
+    private static void userLoginReact() {
+        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
+        dni.click();
+        dni.clear();
+        dni.sendKeys("10000001S");
+        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
+        password.click();
+        password.clear();
+        password.sendKeys("Us3r@1-PASSW");
+        driver.findElement(By.xpath("/html/body/div/div/button")).click();
+    }
+
     /**
      * [PR01] Registro con datos válidos.
      * El formulario va a /users/signup (POST).
@@ -1054,15 +1066,7 @@ class Sdi2425Entrega2TestApplicationTests {
         driver.navigate().to("http://localhost:3000/");
 
         //login react
-        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
-        dni.click();
-        dni.clear();
-        dni.sendKeys("10000001S");
-        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
-        password.click();
-        password.clear();
-        password.sendKeys("Us3r@1-PASSW");
-        driver.findElement(By.xpath("/html/body/div/div/button")).click();
+        userLoginReact();
 
         PO_View.checkElementBy(driver, "text", "Espacio");
         PO_View.checkElementBy(driver, "text", "Inicio");
@@ -1084,26 +1088,44 @@ class Sdi2425Entrega2TestApplicationTests {
         driver.navigate().to("http://localhost:3000/");
 
         //login react
-        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
-        dni.click();
-        dni.clear();
-        dni.sendKeys("10000001S");
-        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
-        password.click();
-        password.clear();
-        password.sendKeys("Us3r@1-PASSW");
-        driver.findElement(By.xpath("/html/body/div/div/button")).click();
+        userLoginReact();
 
+        //se filtra por reservas canceladas
         driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
 
         List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(1, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+        assertEquals(1, rows.size(), "Debería haber exactamente 1 elementos en la tabla");
     }
 
     @Test
     @Order(56)
     public void PR56() {
-        Assertions.assertTrue(false, "PR56 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+
+        //login react
+        userLoginReact();
+
+        //crear reserva nueva
+        driver.findElement(By.xpath("/html/body/div/div/header/nav/button[2]")).click();
+        //escoger espacio
+        driver.findElement(By.xpath("/html/body/div/div/main/div/form/div[1]/select/option[2]")).click();
+        //seleccionar fecha //*[@id="startDate"]
+        driver.findElement(By.id("startDate")).sendKeys("01-05-2027, 14:00");
+        driver.findElement(By.id("endDate")).sendKeys("01-05-2027, 16:00");
+
+        //se rellena el dni //*[@id="userDni"]
+        driver.findElement(By.id("userDni")).sendKeys("10000001S");
+
+        driver.findElement(By.xpath("/html/body/div/div/main/div/form/button")).click();
+
+        //se cancela la reserva
+        driver.findElement(By.xpath("/html/body/div/div/main/div/div[2]/table/tbody/tr[6]/td[5]/button[2]")).click();
+
+        //se filtra por reservas canceladas
+        driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(2, rows.size(), "Debería haber exactamente 2 elementos en la tabla");
     }
 
     @Test

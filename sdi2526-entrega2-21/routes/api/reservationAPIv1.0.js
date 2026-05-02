@@ -220,7 +220,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 return res.status(403).json({ error: "Solo puedes editar tus propias reservas" });
             }
 
-            if (reservation.status === "CANCELADA") {
+            if (reservation.status === "CANCELLED") {
                 return res.status(400).json({ error: "No se puede editar una reserva cancelada" });
             }
 
@@ -326,19 +326,19 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 return res.status(403).json({ error: "Solo se pueden cancelar reservas propias" });
             }
 
-            if (reservation.status === "CANCELADA") {
+            if (reservation.status === "CANCELLED") {
                 return res.status(400).json({ error: "La reserva ya se encuentra cancelada" });
             }
 
             const result = await reservationsRepository.updateReservation(
                 { _id: new ObjectId(reservationId) },
-                { status: "CANCELADA" }
+                { status: "CANCELLED" }
             );
 
             if (result.modifiedCount > 0) {
                 res.status(200).json({
                     message: "Reserva cancelada correctamente",
-                    status: "CANCELADA"
+                    status: "CANCELLED"
                 });
             } else {
                 res.status(500).json({ error: "No se pudo actualizar el estado de la reserva" });

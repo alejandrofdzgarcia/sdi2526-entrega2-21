@@ -40,12 +40,6 @@ const UserReservations = ({ onEdit }) => {
     // cancelar reserva
     const cancelReservation = async (reservationId) => {
 
-        const confirmed = window.confirm(
-            "¿Seguro que quieres cancelar esta reserva?"
-        );
-
-        if (!confirmed) return;
-
         try {
             const response = await fetch(
                 `http://localhost:8081/api/v1.0/reservations/${reservationId}`,
