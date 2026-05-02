@@ -1223,10 +1223,60 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El mensaje debe indicar que se crearon reservas recurrentes");
     }
 
+    /**
+     * [PR48] S6 - API: Crear reserva recurrente con solape → rechazar y no crear ninguna.
+     */
     @Test
     @Order(48)
     public void PR48() {
-        Assertions.assertTrue(false, "PR48 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000002Q");
+        loginBody.put("password", "Us3r@2-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode());
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId);
+
+        JSONObject body = new JSONObject();
+        body.put("userDni",       "10000002Q");
+        body.put("frequency",     "diaria");
+        body.put("endRecurrence", "2026-12-31T23:59:00");
+
+        Response resp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(body.toJSONString())
+                .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
+
+        Assertions.assertEquals(409, resp.getStatusCode(),
+                "Un solape debe devolver 409 y no crear ninguna reserva");
+
+        String error = resp.jsonPath().getString("error");
+        Assertions.assertNotNull(error, "Debe incluir mensaje de error explicando el solape");
     }
 
     @Test
