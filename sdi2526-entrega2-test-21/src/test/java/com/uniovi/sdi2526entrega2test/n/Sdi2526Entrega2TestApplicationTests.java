@@ -1019,16 +1019,144 @@ class Sdi2425Entrega2TestApplicationTests {
         assertEquals(201, resOk.getStatusCode());
     }
 
+    /**
+     * [PR45] S5 - API: Editar una reserva existente con datos válidos.
+     * Confirma que el servidor responde 200 y que el motivo queda actualizado.
+     */
     @Test
     @Order(45)
     public void PR45() {
-        Assertions.assertTrue(false, "PR45 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode(), "Login debe devolver 200");
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token, "El token no debe ser nulo");
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+        Assertions.assertFalse(reservations.isEmpty(), "Debe haber reservas en el seed");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId, "Debe existir al menos una reserva ACTIVE");
+
+        JSONObject editBody = new JSONObject();
+        editBody.put("userDni", "10000001S");
+        editBody.put("startDate", "2026-07-01T09:00:00");
+        editBody.put("endDate",   "2026-07-01T11:00:00");
+        editBody.put("reason",    "Motivo editado PR45");
+
+        Response editResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(editBody.toJSONString())
+                .put(BASE + "/api/v1.0/reservations/" + reservationId);
+
+        Assertions.assertEquals(200, editResp.getStatusCode(),
+                "Edición válida debe devolver 200");
+        Assertions.assertNotNull(editResp.jsonPath().getString("message"),
+                "Debe haber mensaje de confirmación");
+
+        Response verifyResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        List updated = verifyResp.jsonPath().getList("$");
+        String finalReservationId = reservationId;
+        boolean found = updated.stream().anyMatch(o -> {
+            java.util.Map r = (java.util.Map) o;
+            return finalReservationId.equals(String.valueOf(r.get("_id")))
+                    && "Motivo editado PR45".equals(r.get("reason"));
+        });
+        Assertions.assertTrue(found, "El motivo debe haberse actualizado en la BD");
     }
 
+    /**
+     * [PR46] S5 - API: Editar una reserva con solape → debe devolver 409 y NO modificar.
+     */
     @Test
     @Order(46)
     public void PR46() {
-        Assertions.assertTrue(false, "PR46 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        List reservations = listResp.jsonPath().getList("$");
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId);
+
+        Response spacesResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/spaces");
+
+        List spaces = spacesResp.jsonPath().getList("$");
+        String aulaUnoId = null;
+        for (Object obj : spaces) {
+            java.util.Map s = (java.util.Map) obj;
+            if ("Aula 1".equals(s.get("name"))) {
+                aulaUnoId = s.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Aula 1' en el seed");
+
+        JSONObject editBody = new JSONObject();
+        editBody.put("userDni",    "10000001S");
+        editBody.put("spaceId",    aulaUnoId);
+        editBody.put("startDate",  "2026-05-12T10:30:00");
+        editBody.put("endDate",    "2026-05-12T11:30:00");
+        editBody.put("reason",     "Intento solape PR46");
+
+        Response editResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(editBody.toJSONString())
+                .put(BASE + "/api/v1.0/reservations/" + reservationId);
+
+        Assertions.assertEquals(409, editResp.getStatusCode(),
+                "Un solape debe devolver 409");
+        Assertions.assertNotNull(editResp.jsonPath().getString("error"),
+                "Debe incluir mensaje de error");
     }
 
     @Test
@@ -1124,13 +1252,31 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(57)
     public void PR57() {
-        Assertions.assertTrue(false, "PR57 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_EditView.clickEditarPrimeraReservaActiva(driver);
+        PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
+        PO_EditView.submitEditForm(driver);
+
+        assertFalse(PO_View.checkElementBy(driver, "text", "actualizada").isEmpty(),
+                "Debe mostrarse mensaje de éxito");
+
+        SeleniumUtils.waitLoadElementsBy(driver, "text", "Mis Reservas", PO_View.getTimeout());
     }
 
     @Test
     @Order(58)
     public void PR58() {
-        Assertions.assertTrue(false, "PR58 sin hacer");
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_EditView.clickEditarPrimeraReservaActiva(driver);
+        PO_EditView.fillEditForm(driver, "Aula 1", "2026-05-12T10:30", "2026-05-12T11:30", "Solape PR58");
+        PO_EditView.submitEditForm(driver);
+
+        assertFalse(PO_View.checkElementBy(driver, "text", "horario").isEmpty(),
+                "Debe mostrarse mensaje de error de solape");
+        assertFalse(PO_View.checkElementBy(driver, "text", "Editar Reserva").isEmpty(),
+                "El formulario debe permanecer visible");
     }
 
     @Test
