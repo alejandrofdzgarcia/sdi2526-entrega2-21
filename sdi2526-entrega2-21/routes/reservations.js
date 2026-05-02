@@ -13,15 +13,18 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
                     id: space._id,
                     name: space.name
                 }));
+
             //filtros
             let searchSpace = req.query.searchSpace || "";
             let startDate = req.query.startDate || "";
             let endDate = req.query.endDate || "";
+
             //filtro de espacio
             if (searchSpace != null && typeof (searchSpace) != "undefined" && searchSpace !== "") {
                 let spaceID = new ObjectId(searchSpace);
                 filter = { spaceId: spaceID };
             }
+
             // filtro por rango de fechas
             if (startDate || endDate) {
                 filter.startDate = {};
@@ -44,6 +47,7 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
             let result = await reservationsRepository.getReservationPg(filter, options, page);
 
             let lastPage = result.total / limit;
+
             //quitar decimales
             if (result.total % limit > 0) {
                 lastPage = lastPage + 1;

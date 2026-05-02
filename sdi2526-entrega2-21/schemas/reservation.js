@@ -20,17 +20,35 @@ const reservationSchema = {
 
 const reservationRequestSchema = {
     type: 'object',
-    required: ['spaceId', 'startDate', 'endDate', 'userDni'],
+    required: ['spaceId', 'startDate', 'endDate'],
     properties: {
         spaceId: { type: 'string', example: '64f123abc456def789' },
         startDate: { type: 'string', format: 'date-time', example: '2025-10-01T10:00:00Z' },
         endDate: { type: 'string', format: 'date-time', example: '2025-10-01T12:00:00Z' },
-        reason: { type: 'string', example: 'Reunión de equipo' },
-        userDni: { type: 'string', example: '10000001S' }
+        reason: { type: 'string', example: 'Reunión de equipo' }
+    }
+};
+
+const recurrenceRequestSchema = {
+    type: 'object',
+    required: ['frequency', 'endRecurrence'],
+    properties: {
+        frequency: { 
+            type: 'string', 
+            enum: ['diaria', 'semanal', 'mensual', 'anual'],
+            example: 'semanal' 
+        },
+        endRecurrence: { 
+            type: 'string', 
+            format: 'date-time', 
+            example: '2025-12-31T23:59:59Z',
+            description: 'Fecha límite para la generación de reservas recurrentes'
+        }
     }
 };
 
 module.exports = {
     Reservation: reservationSchema,
-    ReservationRequest: reservationRequestSchema
+    ReservationRequest: reservationRequestSchema,
+    RecurrenceRequest: recurrenceRequestSchema
 };

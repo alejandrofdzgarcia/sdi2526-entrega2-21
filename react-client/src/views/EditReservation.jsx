@@ -19,8 +19,7 @@ const EditReservation = ({ reservation, onDone }) => {
         spaceId:   reservation.spaceId?.toString() || "",
         startDate: toLocalInput(reservation.startDateRaw),
         endDate:   toLocalInput(reservation.endDateRaw),
-        reason:    reservation.reason || "",
-        userDni:   reservation.userDni
+        reason:    reservation.reason || ""
     });
 
     useEffect(() => {

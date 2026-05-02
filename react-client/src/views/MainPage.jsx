@@ -10,7 +10,6 @@ import RecurrentReservation from "./RecurrentReservation";
 const MainPage = () => {
     const [view, setView] = useState("reservations");
     const [reservationToEdit, setReservationToEdit] = useState(null);
-    const [selectedSongId, setSelectedSongId] = useState(null);
 
     const handleEdit = (reservation) => {
         setReservationToEdit(reservation);
@@ -29,7 +28,7 @@ const MainPage = () => {
             />
             <main className="content">
                 {view === "add" && <AddReservation onReservationAdded={() => setView("reservations")} />}
-                {view === "reservations" && <UserReservations />}
+                {view === "reservations" && <UserReservations onEdit={handleEdit} />}
                 {view === "edit" && reservationToEdit && (
                     <EditReservation
                         reservation={reservationToEdit}
