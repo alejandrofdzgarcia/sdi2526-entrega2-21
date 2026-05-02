@@ -1,10 +1,6 @@
 package com.uniovi.sdi2526entrega2test.n;
 
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_LoginView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SignUpView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SpacesView;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_View;
-import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_EditView;
+import com.uniovi.sdi2526entrega2test.n.pageobjects.*;
 import com.uniovi.sdi2526entrega2test.n.util.SeleniumUtils;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -111,6 +107,18 @@ class Sdi2425Entrega2TestApplicationTests {
     private void loginAsUser() {
         driver.navigate().to(URL + "/users/login");
         PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+    }
+
+    private static void userLoginReact() {
+        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
+        dni.click();
+        dni.clear();
+        dni.sendKeys("10000001S");
+        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
+        password.click();
+        password.clear();
+        password.sendKeys("Us3r@1-PASSW");
+        driver.findElement(By.xpath("/html/body/div/div/button")).click();
     }
 
     /**
@@ -474,22 +482,81 @@ class Sdi2425Entrega2TestApplicationTests {
                 "El bloqueo debe aparecer con estado CANCELADO tras cancelarlo");
     }
 
+    /**
+     * [PR23] Consultar listado global de reservas
+     * Se prueba la pagionación
+     */
     @Test
     @Order(23)
     public void PR23() {
-        Assertions.assertTrue(false, "PR23 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+
+        //PO_View.checkElementBy(driver, "text", "Usuario");
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+        PO_View.checkElementBy(driver, "text", "Estado");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+        //probar paginación
+        PO_PrivateView.checkPagination(driver);
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //Assertions.assertTrue(false, "PR23 sin hacer");
     }
 
+    /**
+     * [PR24] Filtrar listado global de reservas por espacio
+     * Se prueba la pagionación
+     */
     @Test
     @Order(24)
     public void PR24() {
-        Assertions.assertTrue(false, "PR24 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+
+        driver.findElement(By.xpath("//*[@id=\"searchSpace\"]/option[2]")).click();
+
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("searchSpace="), "La URL debe contener el filtro por espacio");
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("searchSpace="), "El filtro de espacio debe mantenerse al cambiar de página");
+        List<WebElement> filas = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, filas.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //assertTrue(false, "PR24 sin hacer");
     }
 
+    /**
+     * [PR25] Filtrar listado global de reservas por rango de fechas
+     * Se prueba la pagionación
+     */
     @Test
     @Order(25)
     public void PR25() {
-        Assertions.assertTrue(false, "PR25 sin hacer");
+        loginAsAdmin();
+
+        driver.navigate().to(URL + "/admin/reservations/list");
+        driver.findElement(By.id("startDate")).sendKeys("2026-05-01");
+        driver.findElement(By.id("endDate")).sendKeys("2026-05-05");
+        driver.findElement(By.xpath("//button[@type='submit']")).click();
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "La URL debe contener la fecha de inicio");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "La URL debe contener la fecha de fin");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        PO_PrivateView.checkPagination(driver);
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "El filtro de fecha debe mantenerse al cambiar de página");
+        rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+        //Assertions.assertTrue(false, "PR25 sin hacer");
     }
 
     /**
@@ -553,10 +620,28 @@ class Sdi2425Entrega2TestApplicationTests {
         PO_LoginView.logout(driver);
     }
 
+    /**
+     * [PR28] Acceder al detalle de un espacio desde el listado
+     * Se verifica que se muestra la información del espacio
+     */
     @Test
     @Order(28)
     public void PR28() {
-        Assertions.assertTrue(false, "PR28 sin hacer");
+        loginAsUser();
+
+        driver.navigate().to(URL + "/spaces/list");
+
+        driver.findElement(By.xpath("/html/body/div/div/div[2]/table/tbody/tr[1]/td[6]/a")).click();
+
+        String checkText = "Aula Newton";
+        List<WebElement> result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.get(0).getText());
+
+        checkText = "AULA";
+        result = PO_View.checkElementBy(driver, "text", checkText);
+        Assertions.assertEquals(checkText, result.get(0).getText());
+
+        //assertTrue(false, "PR28 sin hacer");
     }
 
     /**
@@ -853,10 +938,28 @@ class Sdi2425Entrega2TestApplicationTests {
         assertTrue(response.getBody().asString().contains("mantenimiento"));
     }
 
+    /**
+     * [PR42] Consulta el listado de reservas propias
+     * El json recibido como respuesta debe contener 5 elementos
+     */
     @Test
     @Order(43)
     public void PR43() {
-        Assertions.assertTrue(false, "PR43 sin hacer");
+        final String RestAssuredURL = "http://localhost:8081/api/v1.0/reservations";
+        String token = getToken("10000001S", "Us3r@1-PASSW");
+
+        RequestSpecification request = RestAssured.given();
+        request.header("token", token);
+        request.header("Content-Type", "application/json");
+
+        Response response = request.get(RestAssuredURL);
+
+        //se comprueba codigo OK
+        assertEquals(200, response.getStatusCode());
+
+        //se comprueba tamaño de la respuesta
+        assertEquals(5, response.jsonPath().getList("$").size());
+
     }
 
     /**
@@ -916,144 +1019,16 @@ class Sdi2425Entrega2TestApplicationTests {
         assertEquals(201, resOk.getStatusCode());
     }
 
-    /**
-     * [PR45] S5 - API: Editar una reserva existente con datos válidos.
-     * Confirma que el servidor responde 200 y que el motivo queda actualizado.
-     */
     @Test
     @Order(45)
     public void PR45() {
-        final String BASE = "http://localhost:8081";
-
-        JSONObject loginBody = new JSONObject();
-        loginBody.put("dni", "10000001S");
-        loginBody.put("password", "Us3r@1-PASSW");
-
-        Response loginResp = RestAssured.given()
-                .header("Content-Type", "application/json")
-                .body(loginBody.toJSONString())
-                .post(BASE + "/api/users/login");
-
-        Assertions.assertEquals(200, loginResp.getStatusCode(), "Login debe devolver 200");
-        String token = loginResp.jsonPath().getString("token");
-        Assertions.assertNotNull(token, "El token no debe ser nulo");
-
-        Response listResp = RestAssured.given()
-                .header("token", token)
-                .get(BASE + "/api/v1.0/reservations");
-
-        Assertions.assertEquals(200, listResp.getStatusCode());
-        List reservations = listResp.jsonPath().getList("$");
-        Assertions.assertFalse(reservations.isEmpty(), "Debe haber reservas en el seed");
-
-        String reservationId = null;
-        for (Object obj : reservations) {
-            java.util.Map r = (java.util.Map) obj;
-            if ("ACTIVE".equals(r.get("status"))) {
-                reservationId = r.get("_id").toString();
-                break;
-            }
-        }
-        Assertions.assertNotNull(reservationId, "Debe existir al menos una reserva ACTIVE");
-
-        JSONObject editBody = new JSONObject();
-        editBody.put("userDni", "10000001S");
-        editBody.put("startDate", "2026-07-01T09:00:00");
-        editBody.put("endDate",   "2026-07-01T11:00:00");
-        editBody.put("reason",    "Motivo editado PR45");
-
-        Response editResp = RestAssured.given()
-                .header("Content-Type", "application/json")
-                .header("token", token)
-                .body(editBody.toJSONString())
-                .put(BASE + "/api/v1.0/reservations/" + reservationId);
-
-        Assertions.assertEquals(200, editResp.getStatusCode(),
-                "Edición válida debe devolver 200");
-        Assertions.assertNotNull(editResp.jsonPath().getString("message"),
-                "Debe haber mensaje de confirmación");
-
-        Response verifyResp = RestAssured.given()
-                .header("token", token)
-                .get(BASE + "/api/v1.0/reservations");
-
-        List updated = verifyResp.jsonPath().getList("$");
-        String finalReservationId = reservationId;
-        boolean found = updated.stream().anyMatch(o -> {
-            java.util.Map r = (java.util.Map) o;
-            return finalReservationId.equals(String.valueOf(r.get("_id")))
-                    && "Motivo editado PR45".equals(r.get("reason"));
-        });
-        Assertions.assertTrue(found, "El motivo debe haberse actualizado en la BD");
+        Assertions.assertTrue(false, "PR45 sin hacer");
     }
 
-    /**
-     * [PR46] S5 - API: Editar una reserva con solape → debe devolver 409 y NO modificar.
-     */
     @Test
     @Order(46)
     public void PR46() {
-        final String BASE = "http://localhost:8081";
-
-        JSONObject loginBody = new JSONObject();
-        loginBody.put("dni", "10000001S");
-        loginBody.put("password", "Us3r@1-PASSW");
-
-        Response loginResp = RestAssured.given()
-                .header("Content-Type", "application/json")
-                .body(loginBody.toJSONString())
-                .post(BASE + "/api/users/login");
-
-        String token = loginResp.jsonPath().getString("token");
-        Assertions.assertNotNull(token);
-
-        Response listResp = RestAssured.given()
-                .header("token", token)
-                .get(BASE + "/api/v1.0/reservations");
-
-        List reservations = listResp.jsonPath().getList("$");
-        String reservationId = null;
-        for (Object obj : reservations) {
-            java.util.Map r = (java.util.Map) obj;
-            if ("ACTIVE".equals(r.get("status"))) {
-                reservationId = r.get("_id").toString();
-                break;
-            }
-        }
-        Assertions.assertNotNull(reservationId);
-
-        Response spacesResp = RestAssured.given()
-                .header("token", token)
-                .get(BASE + "/api/v1.0/spaces");
-
-        List spaces = spacesResp.jsonPath().getList("$");
-        String aulaUnoId = null;
-        for (Object obj : spaces) {
-            java.util.Map s = (java.util.Map) obj;
-            if ("Aula 1".equals(s.get("name"))) {
-                aulaUnoId = s.get("_id").toString();
-                break;
-            }
-        }
-        Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Aula 1' en el seed");
-
-        JSONObject editBody = new JSONObject();
-        editBody.put("userDni",    "10000001S");
-        editBody.put("spaceId",    aulaUnoId);
-        editBody.put("startDate",  "2026-05-12T10:30:00");
-        editBody.put("endDate",    "2026-05-12T11:30:00");
-        editBody.put("reason",     "Intento solape PR46");
-
-        Response editResp = RestAssured.given()
-                .header("Content-Type", "application/json")
-                .header("token", token)
-                .body(editBody.toJSONString())
-                .put(BASE + "/api/v1.0/reservations/" + reservationId);
-
-        Assertions.assertEquals(409, editResp.getStatusCode(),
-                "Un solape debe devolver 409");
-        Assertions.assertNotNull(editResp.jsonPath().getString("error"),
-                "Debe incluir mensaje de error");
+        Assertions.assertTrue(false, "PR46 sin hacer");
     }
 
     @Test
@@ -1098,16 +1073,46 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(false, "PR53 sin hacer");
     }
 
+    /**
+     * [PR54]  Consultar el listado de reservas propias
+     * Se verifica que se muestra la informacion de las reservas
+     * Se verifica que aparece el numero de reservas correcto
+     */
     @Test
     @Order(54)
     public void PR54() {
-        Assertions.assertTrue(false, "PR54 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+
+        //login react
+        userLoginReact();
+
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //Assertions.assertTrue(false, "PR54 sin hacer");
     }
 
+    /**
+     * [PR55]  Filtrar reservas propias por estado CANCELADA
+     * Se verifica que aparece el numero de reservas correcto
+     */
     @Test
     @Order(55)
     public void PR55() {
-        Assertions.assertTrue(false, "PR55 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+
+        //login react
+        userLoginReact();
+
+        //se filtra por reservas canceladas
+        driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(1, rows.size(), "Debería haber exactamente 1 elementos en la tabla");
     }
 
     @Test
@@ -1119,31 +1124,13 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(57)
     public void PR57() {
-        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
-
-        PO_EditView.clickEditarPrimeraReservaActiva(driver);
-        PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
-        PO_EditView.submitEditForm(driver);
-
-        assertFalse(PO_View.checkElementBy(driver, "text", "actualizada").isEmpty(),
-                "Debe mostrarse mensaje de éxito");
-
-        SeleniumUtils.waitLoadElementsBy(driver, "text", "Mis Reservas", PO_View.getTimeout());
+        Assertions.assertTrue(false, "PR57 sin hacer");
     }
 
     @Test
     @Order(58)
     public void PR58() {
-        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
-
-        PO_EditView.clickEditarPrimeraReservaActiva(driver);
-        PO_EditView.fillEditForm(driver, "Aula 1", "2026-05-12T10:30", "2026-05-12T11:30", "Solape PR58");
-        PO_EditView.submitEditForm(driver);
-
-        assertFalse(PO_View.checkElementBy(driver, "text", "horario").isEmpty(),
-                "Debe mostrarse mensaje de error de solape");
-        assertFalse(PO_View.checkElementBy(driver, "text", "Editar Reserva").isEmpty(),
-                "El formulario debe permanecer visible");
+        Assertions.assertTrue(false, "PR58 sin hacer");
     }
 
     @Test

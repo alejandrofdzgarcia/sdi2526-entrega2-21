@@ -7,7 +7,7 @@
             <form method="get" action="/admin/reservations/list">
                 <div class="input-group col-xs-8 col-sm-6 col-md-4 col-lg-5 pull-right">
                     <label for="searchSpace">Filtrar por espacio:</label>
-                    <select name="searchSpace" id="searchSpace" onchange="this.form.submit()">
+                    <select name="searchSpace" id="searchSpace" >
                         <option value="">-- Todos --</option>
                         {% for space in selectSpacesOptions %}
                             <option value="{{ space.id }}"
@@ -21,15 +21,14 @@
                     <input type="date"
                            id="startDate"
                            name="startDate"
-                           value="{{ startDate ? '' }}"
-                           onchange="this.form.submit()">
+                           value="{{ startDate}}">
 
                     <label for="endDate">Hasta:</label>
                     <input type="date"
                            id="endDate"
                            name="endDate"
-                           value="{{ endDate ? '' }}"
-                           onchange="this.form.submit()">
+                           value="{{ endDate}}">
+                    <button id="btn-filter" type="submit">Filtrar</button>
                 </div>
             </form>
         </div>
@@ -46,7 +45,7 @@
         </div>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-responsive" id="tableReservation">
         <table class="table table-striped table-hover">
             <thead>
             <tr>
