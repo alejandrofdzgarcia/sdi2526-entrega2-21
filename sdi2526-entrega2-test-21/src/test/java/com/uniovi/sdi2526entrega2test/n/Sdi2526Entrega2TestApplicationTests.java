@@ -4,6 +4,7 @@ import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_LoginView;
 import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SignUpView;
 import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_SpacesView;
 import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_View;
+import com.uniovi.sdi2526entrega2test.n.pageobjects.PO_EditView;
 import com.uniovi.sdi2526entrega2test.n.util.SeleniumUtils;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -1118,7 +1119,18 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(57)
     public void PR57() {
-        Assertions.assertTrue(false, "PR57 sin hacer");
+        // Login con el PO existente
+        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+
+        PO_EditView.clickEditarPrimeraReservaActiva(driver);
+        PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
+        PO_EditView.submitEditForm(driver);
+
+        // Verificar éxito
+        assertFalse(PO_View.checkElementBy(driver, "text", "actualizada").isEmpty(),
+                "Debe mostrarse mensaje de éxito");
+
+        SeleniumUtils.waitLoadElementsBy(driver, "text", "Mis Reservas", PO_View.getTimeout());
     }
 
     @Test
