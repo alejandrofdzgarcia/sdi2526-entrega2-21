@@ -1079,7 +1079,7 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR54]  Filtrar reservas propias por estado CANCELADA
+     * [PR55]  Filtrar reservas propias por estado CANCELADA
      * Se verifica que aparece el numero de reservas correcto
      */
     @Test
@@ -1097,6 +1097,11 @@ class Sdi2425Entrega2TestApplicationTests {
         assertEquals(1, rows.size(), "Debería haber exactamente 1 elementos en la tabla");
     }
 
+    /**
+     * [PR56]  Cancelar una reserva propia y verificar que deja de ocupar espacios
+     * Se crea una nueva reserva y se cancela
+     * Se comprueba que se ha cancelado la reserva con exito
+     */
     @Test
     @Order(56)
     public void PR56() {
@@ -1113,13 +1118,10 @@ class Sdi2425Entrega2TestApplicationTests {
         driver.findElement(By.id("startDate")).sendKeys("01-05-2027, 14:00");
         driver.findElement(By.id("endDate")).sendKeys("01-05-2027, 16:00");
 
-        //se rellena el dni //*[@id="userDni"]
-        driver.findElement(By.id("userDni")).sendKeys("10000001S");
-
         driver.findElement(By.xpath("/html/body/div/div/main/div/form/button")).click();
 
         //se cancela la reserva
-        driver.findElement(By.xpath("/html/body/div/div/main/div/div[2]/table/tbody/tr[6]/td[5]/button[2]")).click();
+        driver.findElement(By.xpath("/html/body/div/div/main/div/div[2]/table/tbody/tr[6]/td[5]/div/button[2]")).click();
 
         //se filtra por reservas canceladas
         driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();

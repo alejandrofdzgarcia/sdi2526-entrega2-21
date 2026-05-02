@@ -6,7 +6,7 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
     spaceId: '',
     startDate: '',
     endDate: '',
-    userDni: '',
+    userDni: localStorage.getItem("userDni") || '',
     reason: ''
   });
 
@@ -66,20 +66,6 @@ const ReservationForm = ({ onSubmit, isLoading, spaces = [] }) => {
           required
         />
       </div>
-
-      <div className="form-group">
-        <label htmlFor="userDni">DNI del Usuario</label>
-        <input
-          type="text"
-          id="userDni"
-          name="userDni"
-          placeholder="12345678A"
-          value={formData.userDni}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
       <div className="form-group">
         <label htmlFor="reason">Motivo (Opcional)</label>
         <textarea
