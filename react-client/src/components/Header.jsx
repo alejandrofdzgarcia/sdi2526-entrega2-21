@@ -10,6 +10,9 @@ const Header = ({ onChangeView }) => {
                 <button onClick={() => onChangeView("add")}>
                     Nueva Reserva
                 </button>
+                <button onClick={() => onChangeView("recurrent")}>
+                    Reserva Recurrente
+                </button>
                 <button onClick={() => { localStorage.removeItem("token"); window.location.reload(); }}>
                     Cerrar Sesión
                 </button>
