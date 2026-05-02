@@ -129,7 +129,6 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
             const formattedReservations = await Promise.all(
                 reservations.map(async (r) => {
                     const space = await spacesRepository.findSpace({ _id: r.spaceId }, {});
-                    const user = await usersRepository.findUser({ dni: r.userDni }, {});
 
                     const startDateStr = new Date(r.startDate).toLocaleString("es-ES", {
                         day: "2-digit",
@@ -149,7 +148,6 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
 
                     return {
                         espacio: space ? space.name : "Desconocido",
-                        nombre: user ? (user.nombre + " " + user.apellidos) : "Desconocido",
                         dni: r.userDni,
                         inicio: startDateStr,
                         fin: endDateStr,
@@ -162,10 +160,10 @@ module.exports = function (app, reservationsRepository, spacesRepository, usersR
             res.setHeader('Content-Disposition', 'attachment; filename=reservas.csv');
 
             let csv = '\ufeff';
-            csv += "Espacio;Nombre;DNI;Inicio;Fin;Estado\n";
+            csv += "Espacio;DNI;Inicio;Fin;Estado\n";
 
             formattedReservations.forEach(r => {
-                csv += `${r.espacio};${r.nombre};${r.dni};${r.inicio};${r.fin};${r.estado}\n`;
+                csv += `${r.espacio};${r.dni};${r.inicio};${r.fin};${r.estado}\n`;
             });
 
             res.status(200).send(csv);
