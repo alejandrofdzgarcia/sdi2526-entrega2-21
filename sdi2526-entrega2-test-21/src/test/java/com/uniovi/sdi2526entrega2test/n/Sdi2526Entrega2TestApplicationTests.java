@@ -915,10 +915,75 @@ class Sdi2425Entrega2TestApplicationTests {
         assertEquals(201, resOk.getStatusCode());
     }
 
+    /**
+     * [PR45] S5 - API: Editar una reserva existente con datos válidos.
+     * Confirma que el servidor responde 200 y que el motivo queda actualizado.
+     */
     @Test
     @Order(45)
     public void PR45() {
-        Assertions.assertTrue(false, "PR45 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode(), "Login debe devolver 200");
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token, "El token no debe ser nulo");
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+        Assertions.assertFalse(reservations.isEmpty(), "Debe haber reservas en el seed");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId, "Debe existir al menos una reserva ACTIVE");
+
+        JSONObject editBody = new JSONObject();
+        editBody.put("userDni", "10000001S");
+        editBody.put("startDate", "2026-07-01T09:00:00");
+        editBody.put("endDate",   "2026-07-01T11:00:00");
+        editBody.put("reason",    "Motivo editado PR45");
+
+        Response editResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(editBody.toJSONString())
+                .put(BASE + "/api/v1.0/reservations/" + reservationId);
+
+        Assertions.assertEquals(200, editResp.getStatusCode(),
+                "Edición válida debe devolver 200");
+        Assertions.assertNotNull(editResp.jsonPath().getString("message"),
+                "Debe haber mensaje de confirmación");
+
+        Response verifyResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        List updated = verifyResp.jsonPath().getList("$");
+        String finalReservationId = reservationId;
+        boolean found = updated.stream().anyMatch(o -> {
+            java.util.Map r = (java.util.Map) o;
+            return finalReservationId.equals(String.valueOf(r.get("_id")))
+                    && "Motivo editado PR45".equals(r.get("reason"));
+        });
+        Assertions.assertTrue(found, "El motivo debe haberse actualizado en la BD");
     }
 
     @Test
