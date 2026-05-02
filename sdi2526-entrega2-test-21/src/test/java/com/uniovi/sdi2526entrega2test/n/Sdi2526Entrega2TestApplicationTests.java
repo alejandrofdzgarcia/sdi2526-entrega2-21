@@ -986,10 +986,73 @@ class Sdi2425Entrega2TestApplicationTests {
         Assertions.assertTrue(found, "El motivo debe haberse actualizado en la BD");
     }
 
+    /**
+     * [PR46] S5 - API: Editar una reserva con solape → debe devolver 409 y NO modificar.
+     */
     @Test
     @Order(46)
     public void PR46() {
-        Assertions.assertTrue(false, "PR46 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        List reservations = listResp.jsonPath().getList("$");
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId);
+
+        Response spacesResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/spaces");
+
+        List spaces = spacesResp.jsonPath().getList("$");
+        String aulaUnoId = null;
+        for (Object obj : spaces) {
+            java.util.Map s = (java.util.Map) obj;
+            if ("Aula 1".equals(s.get("name"))) {
+                aulaUnoId = s.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Aula 1' en el seed");
+
+        JSONObject editBody = new JSONObject();
+        editBody.put("userDni",    "10000001S");
+        editBody.put("spaceId",    aulaUnoId);
+        editBody.put("startDate",  "2026-05-12T10:30:00");
+        editBody.put("endDate",    "2026-05-12T11:30:00");
+        editBody.put("reason",     "Intento solape PR46");
+
+        Response editResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(editBody.toJSONString())
+                .put(BASE + "/api/v1.0/reservations/" + reservationId);
+
+        Assertions.assertEquals(409, editResp.getStatusCode(),
+                "Un solape debe devolver 409");
+        Assertions.assertNotNull(editResp.jsonPath().getString("error"),
+                "Debe incluir mensaje de error");
     }
 
     @Test
