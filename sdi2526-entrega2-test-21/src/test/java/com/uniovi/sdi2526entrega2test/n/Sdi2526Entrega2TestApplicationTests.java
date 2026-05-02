@@ -46,7 +46,20 @@ class Sdi2526Entrega2TestApplicationTests {
 
         @BeforeEach
         public void setUp() {
+                resetDatabase();
                 driver.navigate().to(URL);
+        }
+
+        private void resetDatabase() {
+                try {
+                        java.net.URL url = new java.net.URL("http://localhost:8081/test/reset");
+                        java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
+                        con.setRequestMethod("GET");
+                        con.getResponseCode();
+                        con.disconnect();
+                } catch (Exception e) {
+                        System.out.println("Reset DB: " + e.getMessage());
+                }
         }
 
         // Después de cada prueba se borran las cookies del navegador
@@ -59,15 +72,6 @@ class Sdi2526Entrega2TestApplicationTests {
         @BeforeAll
         static public void begin() {
                 PO_View.setTimeout(5);
-                try {
-                        java.net.URL url = new java.net.URL("http://localhost:8081/test/reset");
-                        java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
-                        con.setRequestMethod("GET");
-                        con.getResponseCode();
-                        con.disconnect();
-                } catch (Exception e) {
-                        System.out.println("Reset DB: " + e.getMessage());
-                }
         }
 
         // Al finalizar la última prueba
@@ -114,11 +118,10 @@ class Sdi2526Entrega2TestApplicationTests {
         }
 
         private static void userLoginReact(String userDni, String userPassword) {
-                // Si ya estamos logueados (no vemos el campo DNI pero sí el de Cerrar Sesión),
-                // cerramos sesión para asegurar un estado limpio.
                 List<WebElement> loginInput = driver.findElements(By.xpath("//*[@id=\"root\"]/div/input[1]"));
                 if (loginInput.isEmpty()) {
-                        List<WebElement> logoutButtons = driver.findElements(By.xpath("//button[contains(text(), 'Cerrar Sesión')]"));
+                        List<WebElement> logoutButtons = driver
+                                        .findElements(By.xpath("//button[contains(text(), 'Cerrar Sesión')]"));
                         if (!logoutButtons.isEmpty()) {
                                 logoutButtons.get(0).click();
                         }
@@ -796,7 +799,6 @@ class Sdi2526Entrega2TestApplicationTests {
                                         csvFile = files[0];
                                         break;
                                 }
-                                Thread.sleep(500);
                         }
                         assertNotNull(csvFile, "El CSV debería haberse descargado");
 
@@ -1013,7 +1015,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 // (La fecha viene formateada como "15/01/2026, 09:00" segun el locale es-ES en
                 // el server)
                 String resId = resList.jsonPath()
-                                .getString("find { it.space == 'Sala Turing' && it.startDate.contains('09:00') }.id");
+                                .getString("find { it.space == 'Sala Turing' && it.startDate.contains('09:00') }._id");
                 assertNotNull(resId, "Debe existir la reserva de la semilla");
 
                 // 2. Verificar que bloquea un solape (10:00-12:00)
@@ -1161,18 +1163,18 @@ class Sdi2526Entrega2TestApplicationTests {
                 String aulaUnoId = null;
                 for (Object obj : spaces) {
                         java.util.Map s = (java.util.Map) obj;
-                        if ("Aula 1".equals(s.get("name"))) {
+                        if ("Sala Turing".equals(s.get("name"))) {
                                 aulaUnoId = s.get("_id").toString();
                                 break;
                         }
                 }
-                Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Aula 1' en el seed");
+                Assertions.assertNotNull(aulaUnoId, "Debe existir el espacio 'Sala Turing' en el seed");
 
                 JSONObject editBody = new JSONObject();
                 editBody.put("userDni", "10000001S");
                 editBody.put("spaceId", aulaUnoId);
-                editBody.put("startDate", "2026-05-12T10:30:00");
-                editBody.put("endDate", "2026-05-12T11:30:00");
+                editBody.put("startDate", "2026-06-20T10:00:00");
+                editBody.put("endDate", "2026-06-20T11:00:00");
                 editBody.put("reason", "Intento solape PR46");
 
                 Response editResp = RestAssured.given()
@@ -1420,16 +1422,10 @@ class Sdi2526Entrega2TestApplicationTests {
                 driver.navigate().to("http://localhost:3000/");
                 userLoginReact();
 
-                // Estamos en Mis Reservas por defecto o tras login
                 PO_View.checkElementBy(driver, "text", "Mis Reservas");
 
-                // Contar reservas activas antes
-                List<WebElement> rowsBefore = driver.findElements(By.xpath("//tbody/tr"));
-                int activeCountBefore = (int) rowsBefore.stream()
-                                .filter(r -> r.getText().contains("ACTIVE"))
-                                .count();
+                int activeCountBefore = driver.findElements(By.xpath("//tbody/tr[contains(., 'ACTIVE')]")).size();
 
-                // Cancelar la primera reserva activa
                 WebElement firstActiveCancelBtn = driver.findElement(
                                 By.xpath("//tr[td[span[contains(text(), 'ACTIVE')]]]//button[contains(text(), 'Cancelar')]"));
                 firstActiveCancelBtn.click();
@@ -1437,17 +1433,15 @@ class Sdi2526Entrega2TestApplicationTests {
                 // Aceptar confirmación
                 driver.switchTo().alert().accept();
 
-                // Esperar a que se actualice (vuelve a cargar la lista)
-                try {
-                        Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
 
-                // Verificar que hay una reserva activa menos
-                List<WebElement> rowsAfter = driver.findElements(By.xpath("//tbody/tr"));
-                int activeCountAfter = (int) rowsAfter.stream()
-                                .filter(r -> r.getText().contains("ACTIVE"))
-                                .count();
+                WebElement cerrarSesion = driver.findElement(
+                    By.xpath("//*[@id=\"root\"]/div/header/nav/button[4]"));
+                cerrarSesion.click();
+
+                driver.navigate().to("http://localhost:3000/");
+                userLoginReact();
+
+                int activeCountAfter = driver.findElements(By.xpath("//tbody/tr[contains(., 'ACTIVE')]")).size();
 
                 assertEquals(activeCountBefore - 1, activeCountAfter, "Debe haber una reserva activa menos");
         }
@@ -1475,7 +1469,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 userLoginReact();
 
                 PO_EditView.clickEditarPrimeraReservaActiva(driver);
-                PO_EditView.fillEditForm(driver, "Aula 1", "2026-05-12T10:30", "2026-05-12T11:30", "Solape PR58");
+                PO_EditView.fillEditForm(driver, "Sala Turing", "2026-06-20T10:00", "2026-06-20T11:00", "Solape PR58");
                 PO_EditView.submitEditForm(driver);
 
                 assertFalse(PO_View.checkElementBy(driver, "text", "horario").isEmpty(),
