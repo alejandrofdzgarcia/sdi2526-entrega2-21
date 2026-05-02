@@ -1115,37 +1115,10 @@ class Sdi2425Entrega2TestApplicationTests {
         assertEquals(1, rows.size(), "Debería haber exactamente 1 elementos en la tabla");
     }
 
-    /**
-     * [PR56]  Cancelar una reserva propia y verificar que deja de ocupar espacios
-     * Se crea una nueva reserva y se cancela
-     * Se comprueba que se ha cancelado la reserva con exito
-     */
     @Test
     @Order(56)
     public void PR56() {
-        driver.navigate().to("http://localhost:3000/");
-
-        //login react
-        userLoginReact();
-
-        //crear reserva nueva
-        driver.findElement(By.xpath("/html/body/div/div/header/nav/button[2]")).click();
-        //escoger espacio
-        driver.findElement(By.xpath("/html/body/div/div/main/div/form/div[1]/select/option[2]")).click();
-        //seleccionar fecha //*[@id="startDate"]
-        driver.findElement(By.id("startDate")).sendKeys("01-05-2027, 14:00");
-        driver.findElement(By.id("endDate")).sendKeys("01-05-2027, 16:00");
-
-        driver.findElement(By.xpath("/html/body/div/div/main/div/form/button")).click();
-
-        //se cancela la reserva
-        driver.findElement(By.xpath("/html/body/div/div/main/div/div[2]/table/tbody/tr[6]/td[5]/div/button[2]")).click();
-
-        //se filtra por reservas canceladas
-        driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
-
-        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
-        assertEquals(2, rows.size(), "Debería haber exactamente 2 elementos en la tabla");
+        Assertions.assertTrue(false, "PR56 sin hacer");
     }
 
     @Test
