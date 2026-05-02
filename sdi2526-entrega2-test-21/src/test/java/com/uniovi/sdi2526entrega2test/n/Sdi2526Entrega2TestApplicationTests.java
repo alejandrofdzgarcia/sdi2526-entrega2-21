@@ -1091,7 +1091,7 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     /**
-     * [PR46] S5 - API: Editar una reserva con solape → debe devolver 409 y NO modificar.
+     * [PR46] S5 - API: Editar una reserva con solape: debe devolver 409 y NO modificar.
      */
     @Test
     @Order(46)
@@ -1159,10 +1159,68 @@ class Sdi2425Entrega2TestApplicationTests {
                 "Debe incluir mensaje de error");
     }
 
+    /**
+     * [PR47] S6 - API: Crear reserva recurrente semanal válida (sin solapes).
+     * Comprobar que el servicio devuelve todas las reservas previstas (HTTP 201).
+     */
     @Test
     @Order(47)
     public void PR47() {
-        Assertions.assertTrue(false, "PR47 sin hacer");
+        final String BASE = "http://localhost:8081";
+
+        JSONObject loginBody = new JSONObject();
+        loginBody.put("dni", "10000001S");
+        loginBody.put("password", "Us3r@1-PASSW");
+
+        Response loginResp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .body(loginBody.toJSONString())
+                .post(BASE + "/api/users/login");
+
+        Assertions.assertEquals(200, loginResp.getStatusCode());
+        String token = loginResp.jsonPath().getString("token");
+        Assertions.assertNotNull(token);
+
+        Response listResp = RestAssured.given()
+                .header("token", token)
+                .get(BASE + "/api/v1.0/reservations");
+
+        Assertions.assertEquals(200, listResp.getStatusCode());
+        List reservations = listResp.jsonPath().getList("$");
+
+        String reservationId = null;
+        for (Object obj : reservations) {
+            java.util.Map r = (java.util.Map) obj;
+            if ("ACTIVE".equals(r.get("status"))) {
+                reservationId = r.get("_id").toString();
+                break;
+            }
+        }
+        Assertions.assertNotNull(reservationId, "Debe haber al menos una reserva ACTIVE en el seed");
+
+        JSONObject body = new JSONObject();
+        body.put("userDni",       "10000001S");
+        body.put("frequency",     "semanal");
+        body.put("endRecurrence", "2026-09-30T23:59:00");
+
+        Response resp = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("token", token)
+                .body(body.toJSONString())
+                .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
+
+        Assertions.assertEquals(201, resp.getStatusCode(),
+                "Reservas recurrentes válidas deben devolver 201");
+
+        List created = resp.jsonPath().getList("created");
+        Assertions.assertNotNull(created, "La respuesta debe incluir el array 'created'");
+        Assertions.assertFalse(created.isEmpty(),
+                "Debe haberse creado al menos una reserva recurrente");
+
+        String message = resp.jsonPath().getString("message");
+        Assertions.assertNotNull(message);
+        Assertions.assertTrue(message.contains("creadas") || message.contains("recurrentes"),
+                "El mensaje debe indicar que se crearon reservas recurrentes");
     }
 
     @Test
