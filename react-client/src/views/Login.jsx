@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../assets/Login.css";
 const Login = ({ onLogin }) => {
-    const [email, setEmail] = useState("");
+    const [dni, setDni] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const handleLogin = () => {
@@ -10,19 +10,21 @@ const Login = ({ onLogin }) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ dni, password })
         })
             .then(res => res.json())
             .then(data => {
                 if (!data.token) {
-                    setError("El nombre de usuario o contraseña introducidas no son válidas")
+                    setError("El DNI o contraseña introducidas no son válidas")
                     throw new Error("Login inválido");
                 }
                 localStorage.setItem("token", data.token);
+                localStorage.setItem("userDni", dni.toUpperCase());
                 onLogin();
             })
             .catch(() => {
                 localStorage.removeItem("token");
+                localStorage.removeItem("userDni");
             });
     };
 
@@ -30,10 +32,10 @@ const Login = ({ onLogin }) => {
         <div className="login-container">
             <h2>Iniciar Sesión</h2>
             <input
-                type="email"
-                placeholder="email@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="DNI (ej: 12345678A)"
+                value={dni}
+                onChange={(e) => setDni(e.target.value)}
             />
             <input
                 type="password"

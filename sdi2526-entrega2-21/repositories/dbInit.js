@@ -107,7 +107,7 @@ module.exports = {
                 startDate: new Date('2026-05-08T08:00:00'),
                 endDate:   new Date('2026-05-08T10:00:00'),
                 reason: 'Trabajo remoto',
-                status: 'CANCELADA',
+                status: 'CANCELLED',
                 createdAt: new Date()
             },
         ];

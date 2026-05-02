@@ -34,6 +34,35 @@ const UserReservations = ({ onEdit }) => {
         setIsLoading(false);
     };
 
+    const handleCancel = async (id) => {
+        if (!window.confirm("¿Está seguro de que desea cancelar esta reserva?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8081/api/v1.0/reservations/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "token": localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    userDni: localStorage.getItem("userDni")
+                })
+            });
+
+            if (response.ok) {
+                fetchReservations();
+            } else {
+                const data = await response.json();
+                alert(data.error || "Error al cancelar la reserva");
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            alert("Error de conexión con el servidor");
+        }
+    };
+
     // filtrar por estado
     const filteredReservations = reservations.filter(r => {
         if (!filterStatus) return true;
@@ -94,9 +123,14 @@ const UserReservations = ({ onEdit }) => {
                                 </td>
                                 <td>
                                     {r.status === "ACTIVE" && (
-                                        <button onClick={() => onEdit(r)}>
-                                            Editar
-                                        </button>
+                                        <div className="actions-cell">
+                                            <button className="edit-btn" onClick={() => onEdit(r)}>
+                                                Editar
+                                            </button>
+                                            <button className="cancel-btn" onClick={() => handleCancel(r._id)}>
+                                                Cancelar
+                                            </button>
+                                        </div>
                                     )}
                                 </td>
                             </tr>
