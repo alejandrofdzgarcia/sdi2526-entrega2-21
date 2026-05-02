@@ -82,7 +82,7 @@ async function resetDatabase(db) {
             const isCancelled = i === 4;
             const targetSpace = spaces[i % 5];
             const day = String(15 + userIndex).padStart(2, '0');
-            const month = String((i % 6) + 1).padStart(2, '0');
+            const month = String((i % 6) + 6).padStart(2, '0');
             const hour = String(9 + i).padStart(2, '0');
             const start = new Date(`2026-${month}-${day}T${hour}:00:00`);
             const end = new Date(start.getTime() + 1000 * 60 * 60 * 2);

@@ -30,7 +30,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import java.util.List;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class Sdi2425Entrega2TestApplicationTests {
+class Sdi2526Entrega2TestApplicationTests {
 
     static String PathFirefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
@@ -110,15 +110,15 @@ class Sdi2425Entrega2TestApplicationTests {
     }
 
     private static void userLoginReact() {
-        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
+        WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
         dni.click();
         dni.clear();
         dni.sendKeys("10000001S");
-        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
+        WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
         password.click();
         password.clear();
         password.sendKeys("Us3r@1-PASSW");
-        driver.findElement(By.xpath("/html/body/div/div/button")).click();
+        driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
     }
 
     /**
@@ -542,18 +542,18 @@ class Sdi2425Entrega2TestApplicationTests {
         loginAsAdmin();
 
         driver.navigate().to(URL + "/admin/reservations/list");
-        driver.findElement(By.id("startDate")).sendKeys("2026-05-01");
-        driver.findElement(By.id("endDate")).sendKeys("2026-05-05");
+        driver.findElement(By.id("startDate")).sendKeys("2026-06-01");
+        driver.findElement(By.id("endDate")).sendKeys("2026-06-30");
         driver.findElement(By.xpath("//button[@type='submit']")).click();
-        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "La URL debe contener la fecha de inicio");
-        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "La URL debe contener la fecha de fin");
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-06-01"), "La URL debe contener la fecha de inicio");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-06-30"), "La URL debe contener la fecha de fin");
 
         List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
 
         PO_PrivateView.checkPagination(driver);
-        assertTrue(driver.getCurrentUrl().contains("startDate=2026-05-01"), "El filtro de fecha debe mantenerse al cambiar de página");
-        assertTrue(driver.getCurrentUrl().contains("endDate=2026-05-05"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("startDate=2026-06-01"), "El filtro de fecha debe mantenerse al cambiar de página");
+        assertTrue(driver.getCurrentUrl().contains("endDate=2026-06-30"), "El filtro de fecha debe mantenerse al cambiar de página");
         rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
         assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
         //Assertions.assertTrue(false, "PR25 sin hacer");
@@ -878,7 +878,7 @@ class Sdi2425Entrega2TestApplicationTests {
 
     /**
      * [PR41] Intentar crear una reserva solapada en el mismo espacio (debe fallar).
-     * El seed tiene una reserva en "Sala Turing" el 2026-01-15 de 09:00 a 11:00.
+     * El seed tiene una reserva en "Sala Turing" el 2026-06-15 de 09:00 a 11:00.
      * Debe devolver 409 Conflict.
      */
     @Test @Order(41)
@@ -892,8 +892,8 @@ class Sdi2425Entrega2TestApplicationTests {
 
         JSONObject params = new JSONObject();
         params.put("spaceId", spaceId);
-        params.put("startDate", "2026-01-15T10:00:00"); // Se solapa (09-11)
-        params.put("endDate", "2026-01-15T12:00:00");
+        params.put("startDate", "2026-06-15T10:00:00"); // Se solapa (09-11)
+        params.put("endDate", "2026-06-15T12:00:00");
         params.put("userDni", "10000001S");
 
         request.body(params.toJSONString());
@@ -966,7 +966,7 @@ class Sdi2425Entrega2TestApplicationTests {
      */
     /**
      * [PR44] Cancelar una reserva propia y verificar que deja de ocupar espacio.
-     * Utiliza una reserva de la semilla (Sala Turing, 15 de Enero).
+     * Utiliza una reserva de la semilla (Sala Turing, 15 de Junio).
      */
     @Test @Order(44)
     void PR44() {
@@ -987,8 +987,8 @@ class Sdi2425Entrega2TestApplicationTests {
         // 2. Verificar que bloquea un solape (10:00-12:00)
         JSONObject paramsOverlap = new JSONObject();
         paramsOverlap.put("spaceId", spaceId);
-        paramsOverlap.put("startDate", "2026-01-15T10:00:00");
-        paramsOverlap.put("endDate", "2026-01-15T12:00:00");
+        paramsOverlap.put("startDate", "2026-06-15T10:00:00");
+        paramsOverlap.put("endDate", "2026-06-15T12:00:00");
         paramsOverlap.put("userDni", dni);
 
         Response resFail = RestAssured.given()
@@ -1277,31 +1277,93 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(49)
     public void PR49() {
-        Assertions.assertTrue(false, "PR49 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
+        // Verificar que estamos dentro (aparece el título Mis Reservas)
+        assertFalse(PO_View.checkElementBy(driver, "text", "Mis Reservas").isEmpty(),
+                "Tras login exitoso debe mostrarse el listado de reservas");
     }
 
     @Test
     @Order(50)
     public void PR50() {
-        Assertions.assertTrue(false, "PR50 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        // Login con datos inválidos
+        WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
+        dni.sendKeys("99999999Z");
+        WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
+        password.sendKeys("wrongpass");
+        driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
+
+        // Verificar mensaje de error
+        assertFalse(PO_View.checkElementBy(driver, "text", "no son válidas").isEmpty(),
+                "Debe mostrarse mensaje de error ante credenciales inválidas");
     }
 
     @Test
     @Order(51)
     public void PR51() {
-        Assertions.assertTrue(false, "PR51 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
+        PO_View.checkElementBy(driver, "text", "Mis Reservas");
+
+        // Cerrar sesión
+        driver.findElement(By.className("logout-btn")).click();
+
+        // Verificar que volvemos al login (aparece el título Iniciar Sesión)
+        assertFalse(PO_View.checkElementBy(driver, "text", "Iniciar Sesión").isEmpty(),
+                "Tras logout debe mostrarse el formulario de inicio de sesión");
     }
 
     @Test
     @Order(52)
     public void PR52() {
-        Assertions.assertTrue(false, "PR52 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
+
+        // Ir a Nueva Reserva
+        driver.findElement(By.xpath("//button[contains(text(), 'Nueva Reserva')]")).click();
+
+        // Esperar a que el formulario cargue
+        PO_View.checkElementBy(driver, "text", "Registrar Nueva Reserva");
+
+        // Rellenar formulario
+        // Seleccionar espacio
+        WebElement spaceSelect = driver.findElement(By.id("spaceId"));
+        new org.openqa.selenium.support.ui.Select(spaceSelect).selectByVisibleText("Sala Turing (Planta 1)");
+
+        // Fechas futuras
+        driver.findElement(By.id("startDate")).sendKeys("2026-11-20T10:00");
+        driver.findElement(By.id("endDate")).sendKeys("2026-11-20T11:00");
+        driver.findElement(By.id("reason")).sendKeys("Reserva válida desde React PR52");
+
+        // Enviar
+        driver.findElement(By.className("submit-btn")).click();
+
+        // Verificar mensaje de éxito
+        assertFalse(PO_View.checkElementBy(driver, "text", "correctamente").isEmpty());
     }
 
     @Test
     @Order(53)
     public void PR53() {
-        Assertions.assertTrue(false, "PR53 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
+
+        // Ir a Nueva Reserva
+        driver.findElement(By.xpath("//button[contains(text(), 'Nueva Reserva')]")).click();
+
+        // Rellenar formulario con fecha inicio > fin
+        new org.openqa.selenium.support.ui.Select(driver.findElement(By.id("spaceId"))).selectByVisibleText("Sala Turing (Planta 1)");
+        driver.findElement(By.id("startDate")).sendKeys("2026-11-20T12:00");
+        driver.findElement(By.id("endDate")).sendKeys("2026-11-20T10:00");
+        driver.findElement(By.id("reason")).sendKeys("Reserva inválida PR53");
+
+        // Enviar
+        driver.findElement(By.className("submit-btn")).click();
+
+        // Verificar mensaje de error (el backend devuelve 400 y el toast lo muestra)
+        assertFalse(PO_View.checkElementBy(driver, "text", "anterior").isEmpty());
     }
 
     /**
@@ -1349,13 +1411,42 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(56)
     public void PR56() {
-        Assertions.assertTrue(false, "PR56 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
+
+        // Estamos en Mis Reservas por defecto o tras login
+        PO_View.checkElementBy(driver, "text", "Mis Reservas");
+
+        // Contar reservas activas antes
+        List<WebElement> rowsBefore = driver.findElements(By.xpath("//tbody/tr"));
+        int activeCountBefore = (int) rowsBefore.stream()
+                .filter(r -> r.getText().contains("ACTIVE"))
+                .count();
+
+        // Cancelar la primera reserva activa
+        WebElement firstActiveCancelBtn = driver.findElement(By.xpath("//tr[td[span[contains(text(), 'ACTIVE')]]]//button[contains(text(), 'Cancelar')]"));
+        firstActiveCancelBtn.click();
+
+        // Aceptar confirmación
+        driver.switchTo().alert().accept();
+
+        // Esperar a que se actualice (vuelve a cargar la lista)
+        try { Thread.sleep(1000); } catch (InterruptedException e) {}
+
+        // Verificar que hay una reserva activa menos
+        List<WebElement> rowsAfter = driver.findElements(By.xpath("//tbody/tr"));
+        int activeCountAfter = (int) rowsAfter.stream()
+                .filter(r -> r.getText().contains("ACTIVE"))
+                .count();
+
+        assertEquals(activeCountBefore - 1, activeCountAfter, "Debe haber una reserva activa menos");
     }
 
     @Test
     @Order(57)
     public void PR57() {
-        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
 
         PO_EditView.clickEditarPrimeraReservaActiva(driver);
         PO_EditView.fillEditForm(driver, null, "2026-08-01T09:00", "2026-08-01T11:00", "Motivo editado PR57");
@@ -1370,7 +1461,8 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(58)
     public void PR58() {
-        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
 
         PO_EditView.clickEditarPrimeraReservaActiva(driver);
         PO_EditView.fillEditForm(driver, "Aula 1", "2026-05-12T10:30", "2026-05-12T11:30", "Solape PR58");
@@ -1389,7 +1481,8 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(59)
     public void PR59() {
-        PO_LoginView.fillLoginForm(driver, "10000001S", "Us3r@1-PASSW");
+        driver.navigate().to("http://localhost:3000/");
+        userLoginReact();
 
         PO_RecurrentReservationView.navigateTo(driver);
 
@@ -1416,7 +1509,13 @@ class Sdi2425Entrega2TestApplicationTests {
     @Test
     @Order(60)
     public void PR60() {
-        PO_LoginView.fillLoginForm(driver, "10000002Q", "Us3r@2-PASSW");
+        driver.navigate().to("http://localhost:3000/");
+        // Usar Empleado2 (10000002Q)
+        WebElement dni = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[1]"));
+        dni.sendKeys("10000002Q");
+        WebElement password = driver.findElement(By.xpath("//*[@id=\"root\"]/div/input[2]"));
+        password.sendKeys("Us3r@2-PASSW");
+        driver.findElement(By.xpath("//*[@id=\"root\"]/div/button")).click();
 
         PO_RecurrentReservationView.navigateTo(driver);
 
