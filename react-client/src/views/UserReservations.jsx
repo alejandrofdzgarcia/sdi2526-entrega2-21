@@ -102,7 +102,7 @@ const UserReservations = ({ onEdit }) => {
             )}
 
             {!isLoading && filteredReservations.length > 0 && (
-                <div className="reservations-table-container">
+                <div className="reservations-table-container" id="tableReservation">
                     <table className="reservations-table">
                         <thead className="table-dark">
                         <tr>

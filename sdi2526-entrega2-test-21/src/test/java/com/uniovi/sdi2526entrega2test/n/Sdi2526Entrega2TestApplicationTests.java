@@ -1053,14 +1053,51 @@ class Sdi2425Entrega2TestApplicationTests {
     public void PR54() {
         driver.navigate().to("http://localhost:3000/");
 
+        //login react
+        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
+        dni.click();
+        dni.clear();
+        dni.sendKeys("10000001S");
+        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
+        password.click();
+        password.clear();
+        password.sendKeys("Us3r@1-PASSW");
+        driver.findElement(By.xpath("/html/body/div/div/button")).click();
 
-        Assertions.assertTrue(false, "PR54 sin hacer");
+        PO_View.checkElementBy(driver, "text", "Espacio");
+        PO_View.checkElementBy(driver, "text", "Inicio");
+        PO_View.checkElementBy(driver, "text", "Fin");
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(5, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
+
+        //Assertions.assertTrue(false, "PR54 sin hacer");
     }
 
+    /**
+     * [PR54]  Filtrar reservas propias por estado CANCELADA
+     * Se verifica que aparece el numero de reservas correcto
+     */
     @Test
     @Order(55)
     public void PR55() {
-        Assertions.assertTrue(false, "PR55 sin hacer");
+        driver.navigate().to("http://localhost:3000/");
+
+        //login react
+        WebElement dni = driver.findElement(By.xpath("/html/body/div/div/input[1]"));
+        dni.click();
+        dni.clear();
+        dni.sendKeys("10000001S");
+        WebElement password = driver.findElement(By.xpath("/html/body/div/div/input[2]"));
+        password.click();
+        password.clear();
+        password.sendKeys("Us3r@1-PASSW");
+        driver.findElement(By.xpath("/html/body/div/div/button")).click();
+
+        driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
+
+        List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
+        assertEquals(1, rows.size(), "Debería haber exactamente 5 elementos en la tabla");
     }
 
     @Test
