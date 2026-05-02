@@ -308,7 +308,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
     app.delete('/api/v1.0/reservations/:id', async (req, res) => {
         try {
             const reservationId = req.params.id;
-            const { userDni } = req.body;
+            const  userDni  = res.user;
 
             if (!userDni) {
                 return res.status(400).json({ error: "Falta el DNI del usuario para verificar la propiedad" });

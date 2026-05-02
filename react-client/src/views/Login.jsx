@@ -5,7 +5,7 @@ const Login = ({ onLogin }) => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const handleLogin = () => {
-        fetch("http://localhost:8081/api/v1.0/users/login", {
+        fetch("http://localhost:8081/api/users/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
