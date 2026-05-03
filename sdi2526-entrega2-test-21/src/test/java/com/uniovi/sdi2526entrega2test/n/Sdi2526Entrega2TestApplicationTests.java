@@ -569,6 +569,8 @@ class Sdi2526Entrega2TestApplicationTests {
 
                 driver.findElement(By.xpath("//*[@id=\"searchSpace\"]/option[2]")).click();
 
+                driver.findElement(By.xpath("//*[@id=\"btn-filter\"]")).click();
+
                 PO_PrivateView.checkPagination(driver);
                 assertTrue(driver.getCurrentUrl().contains("searchSpace="),
                                 "La URL debe contener el filtro por espacio");
@@ -591,8 +593,8 @@ class Sdi2526Entrega2TestApplicationTests {
                 loginAsAdmin();
 
                 driver.navigate().to(URL + "/admin/reservations/list");
-                driver.findElement(By.id("startDate")).sendKeys("01062026");
-                driver.findElement(By.id("endDate")).sendKeys("30062026");
+                driver.findElement(By.id("startDate")).sendKeys("2026-06-01");
+                driver.findElement(By.id("endDate")).sendKeys("2026-06-30");
                 driver.findElement(By.xpath("//button[@type='submit']")).click();
                 assertTrue(driver.getCurrentUrl().contains("startDate=2026-06-01"),
                                 "La URL debe contener la fecha de inicio");
