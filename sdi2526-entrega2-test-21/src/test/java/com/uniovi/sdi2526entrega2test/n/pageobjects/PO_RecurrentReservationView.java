@@ -58,12 +58,9 @@ public class PO_RecurrentReservationView extends PO_NavView {
      * Establece la fecha límite de recurrencia.
      * @param endDate Formato "yyyy-MM-ddTHH:mm" (ej. "2026-09-01T09:00")
      */
-    public static void setEndRecurrence(WebDriver driver, String endDate) {
+    public static void setEndRecurrence(WebDriver driver, String endDateDigits) {
         WebElement input = driver.findElement(By.cssSelector("input[name='endRecurrence']"));
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].value = arguments[1];", input, endDate
-        );
-        input.sendKeys(Keys.TAB);
+        input.sendKeys(endDateDigits);
     }
 
     /**

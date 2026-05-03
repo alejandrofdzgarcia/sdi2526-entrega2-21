@@ -15,7 +15,6 @@ const { User } = require('./schemas/user');
 const { Space } = require('./schemas/space');
 const { Reservation, ReservationRequest, RecurrenceRequest } = require('./schemas/reservation');
 const { LoginRequest, SignupRequest } = require('./schemas/auth');
-const { resetDatabase } = require('./public/javascripts/dbInit');
 
 const { MongoClient } = require("mongodb");
 const url = "mongodb://localhost:27017";
@@ -82,11 +81,14 @@ app.use(session({
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
+const dbInit = require('./public/javascripts/dbInit');
+
 app.get('/test/reset', async function (req, res) {
     try {
-        await resetDatabase(db);
+        await dbInit.resetDatabase(db);
         res.json({ ok: true });
     } catch (e) {
+        console.error("Reset error:", e);
         res.status(500).json({ error: e.message });
     }
 });
