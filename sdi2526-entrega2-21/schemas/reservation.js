@@ -1,7 +1,7 @@
 const reservationSchema = {
     type: 'object',
     properties: {
-        id: { type: 'string', description: 'ID de la reserva' },
+        _id: { type: 'string', description: 'ID de la reserva' },
         userDni: { type: 'string', description: 'DNI del solicitante' },
         spaceId: { type: 'string', description: 'ID del espacio reservado' },
         startDate: { type: 'string', description: 'Fecha y hora de inicio' },
@@ -9,7 +9,7 @@ const reservationSchema = {
         status: { type: 'string', description: 'Estado (ACTIVE, CANCELLED)' }
     },
     example: {
-        id: "64f123abc456def789",
+        _id: "64f123abc456def789",
         userDni: "12345678Z",
         spaceId: "64f123abc456def789",
         startDate: "01/10/2025, 10:00",
