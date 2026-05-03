@@ -965,19 +965,32 @@ class Sdi2526Entrega2TestApplicationTests {
                 Assertions.assertTrue(response.jsonPath().getString("error").contains("incorrectos"));
         }
 
+        /**
+         * [PR38] Inicio de sesión con datos inválidos (campo DNI o contraseña vacíos).
+         * Debe devolver 422 Unprocessable Entity (según validador).
+         */
         @Test
         @Order(38)
         public void PR38() {
                 final String RestAssuredURL = URL + "/api/users/login";
                 RequestSpecification request = RestAssured.given();
-                JSONObject requestParams = new JSONObject();
-                requestParams.put("dni", "12345678Z");
-                requestParams.put("password", "@Dm1n1str@D0r");
                 request.header("Content-Type", "application/json");
-                request.body(requestParams.toJSONString());
-                Response response = request.post(RestAssuredURL);
-                Assertions.assertEquals(200, response.getStatusCode());
-                Assertions.assertNotNull(response.jsonPath().getString("token"));
+
+                // Caso 1: DNI vacío
+                JSONObject params1 = new JSONObject();
+                params1.put("dni", "");
+                params1.put("password", "Pass@12345678");
+                request.body(params1.toJSONString());
+                Response resp1 = request.post(RestAssuredURL);
+                Assertions.assertEquals(422, resp1.getStatusCode());
+
+                // Caso 2: Contraseña vacía
+                JSONObject params2 = new JSONObject();
+                params2.put("dni", "12345678Z");
+                params2.put("password", "");
+                request.body(params2.toJSONString());
+                Response resp2 = request.post(RestAssuredURL);
+                Assertions.assertEquals(422, resp2.getStatusCode());
         }
 
         /**
@@ -1562,8 +1575,9 @@ class Sdi2526Entrega2TestApplicationTests {
                 // login react
                 userLoginReact();
 
-                // se filtra por reservas canceladas
-                driver.findElement(By.xpath("/html/body/div/div/main/div/div[1]/select/option[3]")).click();
+                // se filtra por reservas canceladas (usando el valor del select)
+                WebElement statusSelect = driver.findElement(By.className("form-select"));
+                new org.openqa.selenium.support.ui.Select(statusSelect).selectByValue("CANCELLED");
 
                 List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"tableReservation\"]/table/tbody/tr"));
                 assertEquals(1, rows.size(), "Debería haber exactamente 1 elementos en la tabla");
@@ -1587,7 +1601,7 @@ class Sdi2526Entrega2TestApplicationTests {
                 driver.switchTo().alert().accept();
 
                 WebElement cerrarSesion = driver.findElement(
-                                By.xpath("//*[@id=\"root\"]/div/header/nav/button[4]"));
+                                By.xpath("//button[contains(text(), 'Cerrar Sesión')]"));
                 cerrarSesion.click();
 
                 driver.navigate().to("http://localhost:3000/");
