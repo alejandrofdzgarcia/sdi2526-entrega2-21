@@ -1636,8 +1636,8 @@ class Sdi2526Entrega2TestApplicationTests {
                 Assertions.assertFalse(errorMsg.isEmpty(),
                                 "Debe mostrarse un mensaje de error indicando el solape");
 
-                List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
-                Assertions.assertTrue(rows.isEmpty(),
-                                "No debe mostrarse ninguna reserva creada cuando hay un error de solape");
-        }
+        List<WebElement> rows = PO_RecurrentReservationView.getCreatedRows(driver);
+        Assertions.assertTrue(rows.isEmpty(),
+                "No debe mostrarse ninguna reserva creada cuando hay un error de solape");
+    }
 }
