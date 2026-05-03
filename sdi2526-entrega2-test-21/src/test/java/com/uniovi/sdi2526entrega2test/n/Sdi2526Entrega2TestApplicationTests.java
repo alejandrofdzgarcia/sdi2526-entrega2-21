@@ -1415,19 +1415,45 @@ class Sdi2526Entrega2TestApplicationTests {
         @Test
         @Order(49)
         public void PR49() {
-                Assertions.assertTrue(false, "PR49 sin hacer");
+                driver.navigate().to("http://localhost:3000/");
+                userLoginReact("10000001S", "Us3r@1-PASSW");
+
+                // Verificar que se ha iniciado sesión correctamente (aparece "Mis Reservas")
+                assertFalse(PO_View.checkElementBy(driver, "text", "Mis Reservas").isEmpty(),
+                                "Debe mostrarse 'Mis Reservas' tras un login válido");
         }
 
         @Test
         @Order(50)
         public void PR50() {
-                Assertions.assertTrue(false, "PR50 sin hacer");
+                driver.navigate().to("http://localhost:3000/");
+                userLoginReact("10000001S", "contraseña_incorrecta");
+
+                // Verificar que aparece el mensaje de error
+                assertFalse(PO_View.checkElementBy(driver, "text", "El DNI o contraseña introducidas no son válidas")
+                                .isEmpty(), "Debe mostrarse error al usar contraseña incorrecta");
         }
 
         @Test
         @Order(51)
         public void PR51() {
-                Assertions.assertTrue(false, "PR51 sin hacer");
+                driver.navigate().to("http://localhost:3000/");
+                // Ambos vacíos
+                userLoginReact("", "");
+                assertFalse(PO_View.checkElementBy(driver, "text", "El DNI o contraseña introducidas no son válidas")
+                                .isEmpty(), "Debe mostrarse error con campos vacíos");
+
+                // DNI vacío
+                driver.navigate().to("http://localhost:3000/");
+                userLoginReact("", "Us3r@1-PASSW");
+                assertFalse(PO_View.checkElementBy(driver, "text", "El DNI o contraseña introducidas no son válidas")
+                                .isEmpty(), "Debe mostrarse error con DNI vacío");
+
+                // Contraseña vacía
+                driver.navigate().to("http://localhost:3000/");
+                userLoginReact("10000001S", "");
+                assertFalse(PO_View.checkElementBy(driver, "text", "El DNI o contraseña introducidas no son válidas")
+                                .isEmpty(), "Debe mostrarse error con contraseña vacía");
         }
 
         @Test
