@@ -21,7 +21,7 @@ userTokenRouter.use(function (req, res, next) {
             });
         }
 
-        if ((Date.now() / 1000 - infoToken.time) > 24000) {
+        if (!infoToken.time || (Date.now() / 1000 - infoToken.time) > 24000) {
             return res.status(403).json({
                 authorized: false,
                 error: 'Token caducado'

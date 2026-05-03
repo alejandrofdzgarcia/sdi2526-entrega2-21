@@ -234,7 +234,7 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
                 return res.status(403).json({ error: "Solo puedes crear recurrentes a partir de tus propias reservas" });
             }
 
-            if (base.status === "CANCELADA") {
+            if (base.status === "CANCELLED") {
                 return res.status(400).json({ error: "No se puede usar una reserva cancelada como base" });
             }
 
