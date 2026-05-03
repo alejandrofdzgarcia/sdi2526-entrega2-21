@@ -1331,7 +1331,7 @@ class Sdi2526Entrega2TestApplicationTests {
 
         /**
          * [PR47] S6 - API: Crear reserva recurrente semanal válida (sin solapes).
-         * Comprobar que el servicio devuelve todas las reservas previstas (HTTP 201).
+         * Crea primero una reserva limpia en fecha lejana y luego la hace recurrente.
          */
         @Test
         @Order(47)
@@ -1343,58 +1343,76 @@ class Sdi2526Entrega2TestApplicationTests {
                 loginBody.put("password", "Us3r@1-PASSW");
 
                 Response loginResp = RestAssured.given()
-                                .header("Content-Type", "application/json")
-                                .body(loginBody.toJSONString())
-                                .post(BASE + "/api/users/login");
+                        .header("Content-Type", "application/json")
+                        .body(loginBody.toJSONString())
+                        .post(BASE + "/api/users/login");
 
                 Assertions.assertEquals(200, loginResp.getStatusCode());
                 String token = loginResp.jsonPath().getString("token");
                 Assertions.assertNotNull(token);
 
-                Response listResp = RestAssured.given()
-                                .header("token", token)
-                                .get(BASE + "/api/v1.0/reservations");
+                Response spacesResp = RestAssured.given()
+                        .header("token", token)
+                        .get(BASE + "/api/v1.0/spaces");
+                Assertions.assertEquals(200, spacesResp.getStatusCode());
 
-                Assertions.assertEquals(200, listResp.getStatusCode());
-                List reservations = listResp.jsonPath().getList("$");
-
-                String reservationId = null;
-                for (Object obj : reservations) {
-                        java.util.Map r = (java.util.Map) obj;
-                        if ("ACTIVE".equals(r.get("status"))) {
-                                reservationId = r.get("_id").toString();
+                List spaces = spacesResp.jsonPath().getList("$");
+                String spaceId = null;
+                for (Object obj : spaces) {
+                        java.util.Map s = (java.util.Map) obj;
+                        if ("Coworking B".equals(s.get("name")) && Boolean.TRUE.equals(s.get("active"))) {
+                                spaceId = s.get("_id").toString();
                                 break;
                         }
                 }
-                Assertions.assertNotNull(reservationId, "Debe haber al menos una reserva ACTIVE en el seed");
+                Assertions.assertNotNull(spaceId, "Debe existir el espacio 'Coworking B' activo en el seed");
+
+                JSONObject newRes = new JSONObject();
+                newRes.put("userDni", "10000001S");
+                newRes.put("spaceId", spaceId);
+                newRes.put("startDate", "2027-01-10T09:00:00");
+                newRes.put("endDate", "2027-01-10T11:00:00");
+                newRes.put("reason", "Base para recurrente PR47");
+
+                Response createResp = RestAssured.given()
+                        .header("Content-Type", "application/json")
+                        .header("token", token)
+                        .body(newRes.toJSONString())
+                        .post(BASE + "/api/v1.0/reservations");
+
+                Assertions.assertEquals(201, createResp.getStatusCode(),
+                        "La reserva base debe crearse correctamente");
+
+                String reservationId = createResp.jsonPath().getString("reservationId");
+                Assertions.assertNotNull(reservationId, "Debe devolver el ID de la nueva reserva");
 
                 JSONObject body = new JSONObject();
                 body.put("userDni", "10000001S");
                 body.put("frequency", "semanal");
-                body.put("endRecurrence", "2026-09-30T23:59:00");
+                body.put("endRecurrence", "2027-03-01T23:59:00");
 
                 Response resp = RestAssured.given()
-                                .header("Content-Type", "application/json")
-                                .header("token", token)
-                                .body(body.toJSONString())
-                                .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
+                        .header("Content-Type", "application/json")
+                        .header("token", token)
+                        .body(body.toJSONString())
+                        .post(BASE + "/api/v1.0/reservations/" + reservationId + "/recurrent");
 
                 Assertions.assertEquals(201, resp.getStatusCode(),
-                                "Reservas recurrentes válidas deben devolver 201");
+                        "Reservas recurrentes válidas deben devolver 201");
 
                 List created = resp.jsonPath().getList("created");
                 Assertions.assertNotNull(created, "La respuesta debe incluir el array 'created'");
                 Assertions.assertFalse(created.isEmpty(),
-                                "Debe haberse creado al menos una reserva recurrente");
+                        "Debe haberse creado al menos una reserva recurrente");
 
                 String message = resp.jsonPath().getString("message");
                 Assertions.assertNotNull(message);
                 Assertions.assertTrue(message.contains("creadas") || message.contains("recurrentes"),
-                                "El mensaje debe indicar que se crearon reservas recurrentes");
+                        "El mensaje debe indicar que se crearon reservas recurrentes");
         }
 
         /**
-         * [PR48] S6 - API: Crear reserva recurrente con solape → rechazar y no crear
+         * [PR48] S6 - API: Crear reserva recurrente con solape: rechazar y no crear
          * ninguna.
          */
         @Test
@@ -1403,8 +1421,8 @@ class Sdi2526Entrega2TestApplicationTests {
                 final String BASE = "http://localhost:8081";
 
                 JSONObject loginBody = new JSONObject();
-                loginBody.put("dni", "10000002Q");
-                loginBody.put("password", "Us3r@2-PASSW");
+                loginBody.put("dni", "10000001S");
+                loginBody.put("password", "Us3r@1-PASSW");
 
                 Response loginResp = RestAssured.given()
                                 .header("Content-Type", "application/json")
