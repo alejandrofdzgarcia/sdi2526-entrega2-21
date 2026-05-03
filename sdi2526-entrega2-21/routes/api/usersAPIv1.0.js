@@ -68,10 +68,36 @@ module.exports = function (app, usersRepository) {
      *                 token: { type: string }
      *       401:
      *         description: Credenciales incorrectas
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 authorized: { type: boolean, example: false }
+     *                 error: { type: string, example: "DNI o contraseña incorrectos" }
      *       422:
      *         description: Errores de validación
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 errors:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       msg: { type: string }
+     *                       param: { type: string }
      *       500:
      *         description: Error interno del servidor
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 authorized: { type: boolean, example: false }
+     *                 error: { type: string, example: "Error interno del servidor" }
      */
     app.post('/api/users/login', async function (req, res) {
         const { dni, password } = req.body;
@@ -124,10 +150,34 @@ module.exports = function (app, usersRepository) {
      *                 dni: { type: string }
      *       409:
      *         description: Ya existe un usuario con ese DNI
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Ya existe un usuario con ese DNI" }
      *       422:
      *         description: Errores de validación
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 errors:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       msg: { type: string }
+     *                       param: { type: string }
      *       500:
      *         description: Error interno del servidor
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Error interno del servidor" }
      */
     app.post('/api/users/signup', async function (req, res) {
         const { dni, nombre, apellidos, password, confirmPassword } = req.body;

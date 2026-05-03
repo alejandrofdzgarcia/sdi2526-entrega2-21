@@ -23,6 +23,12 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *                 $ref: '#/components/schemas/Reservation'
      *       500:
      *         description: Error interno del servidor
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Error interno del servidor al obtener las reservas propias" }
      */
     app.get('/api/v1.0/reservations', async (req, res) => {
         try {
@@ -84,12 +90,37 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     responses:
      *       201:
      *         description: Reserva creada correctamente
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message: { type: string, example: "Reserva registrada con éxito" }
+     *                 reservationId: { type: string, example: "64f123abc456def789" }
      *       400:
-     *         description: Error en los datos enviados
+     *         description: Error en los datos enviados (campos faltantes o fechas en el pasado)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Faltan datos obligatorios: spaceId, startDate, endDate" }
      *       404:
      *         description: Espacio no encontrado
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Espacio no encontrado" }
      *       409:
      *         description: Conflicto de horario o mantenimiento
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Ya existe una reserva en ese horario" }
      *       500:
      *         description: Error interno del servidor
      */
@@ -196,12 +227,53 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     responses:
      *       201:
      *         description: Reservas recurrentes creadas correctamente
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message: { type: string, example: "Se crearon 4 reservas recurrentes correctamente" }
+     *                 frequency: { type: string, example: "semanal" }
+     *                 created:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       id: { type: string }
+     *                       startDate: { type: string }
+     *                       endDate: { type: string }
      *       400:
-     *         description: Error en los datos enviados
+     *         description: Error en los datos enviados o reserva base inválida
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Frecuencia inválida" }
+     *       403:
+     *         description: No autorizado (solo el dueño puede crear recurrentes)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Solo puedes crear recurrentes a partir de tus propias reservas" }
      *       404:
-     *         description: Espacio no encontrado
+     *         description: Reserva base no encontrada
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Reserva base no encontrada" }
      *       409:
-     *         description: Conflicto de horario o mantenimiento
+     *         description: Conflicto de horario o mantenimiento en alguna ocurrencia
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Solape detectado en la ocurrencia del 15/10/2025" }
      *       500:
      *         description: Error interno del servidor
      */
@@ -350,14 +422,44 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     responses:
      *       200:
      *         description: Reserva actualizada correctamente
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message: { type: string, example: "Reserva actualizada correctamente" }
      *       400:
-     *         description: Error en la solicitud
+     *         description: Error en la solicitud (datos inválidos o reserva cancelada)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Rango de fechas inválido" }
      *       403:
      *         description: Solo puedes editar tus propias reservas
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Solo puedes editar tus propias reservas" }
      *       404:
-     *         description: Reserva no encontrada
+     *         description: Reserva o espacio no encontrado
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Reserva no encontrada" }
      *       409:
      *         description: Conflicto de horario o mantenimiento
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Ya existe una reserva en ese horario" }
      *       500:
      *         description: Error interno del servidor
      */
@@ -449,12 +551,37 @@ module.exports = function (app, spacesRepository, reservationsRepository, mainte
      *     responses:
      *       200:
      *         description: Reserva cancelada correctamente
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message: { type: string, example: "Reserva cancelada correctamente" }
+     *                 status: { type: string, example: "CANCELLED" }
      *       400:
      *         description: Error en la solicitud (ej. ya cancelada)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "La reserva ya se encuentra cancelada" }
      *       403:
      *         description: No autorizado para cancelar esta reserva
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Solo se pueden cancelar reservas propias" }
      *       404:
      *         description: Reserva no encontrada
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error: { type: string, example: "Reserva no encontrada" }
      *       500:
      *         description: Error interno del servidor
      */
