@@ -1672,18 +1672,15 @@ class Sdi2526Entrega2TestApplicationTests {
         @Order(59)
         public void PR59() {
                 driver.navigate().to("http://localhost:3000/");
-                // Usamos el Usuario 15 (día 29) para evitar solapes con otros en las semanas
-                // siguientes
+
                 userLoginReact("10000015W", "Us3r@15-PASSW");
 
                 PO_RecurrentReservationView.navigateTo(driver);
 
-                // Seleccionamos su primera reserva (Sala Turing - 09:00)
                 PO_RecurrentReservationView.selectReservaBase(driver, "Sala Turing");
 
                 PO_RecurrentReservationView.selectFrecuencia(driver, "semanal");
 
-                // Ponemos una fecha límite de un mes después (Noviembre 2026 por ejemplo)
                 PO_RecurrentReservationView.setEndRecurrence(driver, "011120262359");
 
                 PO_RecurrentReservationView.submitForm(driver);
